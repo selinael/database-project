@@ -149,5 +149,36 @@ def query_1():
         }
     ]
     return jsonify(result)
+# Q2: sightings count by region and risk level
+@app.route("/api/queries/2")
+def query_2():
+    # later this will use group by on the sightings table
+    data = [
+        {"region": "Avalon Peninsula", "risk_level": "high", "count": 40},
+        {"region": "Avalon Peninsula", "risk_level": "medium", "count": 10},
+        {"region": "Gros Morne", "risk_level": "medium", "count": 15},
+        {"region": "Terra Nova", "risk_level": "low", "count": 5},
+    ]
+    return jsonify(data)
+
+# Q3: projects that use 'Manual Removal' as a control method
+@app.route("/api/queries/3")
+def query_3():
+    # later this will join eradication_project and method_project tables
+    data = [
+        {
+            "project_id": 1,
+            "name_of_project": "Operation Shoreline",
+            "status": "active",
+            "method_name": "Manual Removal",
+        },
+        {
+            "project_id": 3,
+            "name_of_project": "Harbour Pilot Study",
+            "status": "completed",
+            "method_name": "Manual Removal",
+        },
+    ]
+    return jsonify(data)
 if __name__ == "__main__":
     app.run(debug=True)
