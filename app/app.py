@@ -208,5 +208,23 @@ def query_5():
         },
     ]
     return jsonify(data)
+
+# Q6: population trend (sightings count by year) for one invasive species
+@app.route("/api/queries/6")
+def query_6():
+    # get species from query string, use default if not given
+    species_name = request.args.get("species", "Carcinus maenas")
+
+    # later this will use group by year on the sightings table
+    trend = [
+        {"year": "2022", "total_sightings": 30},
+        {"year": "2023", "total_sightings": 45},
+        {"year": "2024", "total_sightings": 60},
+    ]
+
+    return jsonify({
+        "invasive_scientific_name": species_name,
+        "trend": trend,
+    })
 if __name__ == "__main__":
     app.run(debug=True)
