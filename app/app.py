@@ -136,5 +136,18 @@ def list_projects():
         },
     ]
     return jsonify(projects)
+
+
+# Q1: high risk species with no control method
+@app.route("/api/queries/1")
+def query_1():
+    # this will come from joins later, for now just hard coded
+    result = [
+        {
+            "invasive_scientific_name": "Carcinus maenas",
+            "common_name": "European green crab",
+        }
+    ]
+    return jsonify(result)
 if __name__ == "__main__":
     app.run(debug=True)
