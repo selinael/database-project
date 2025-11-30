@@ -180,5 +180,33 @@ def query_3():
         },
     ]
     return jsonify(data)
+
+# Q4: regions with sightings but no active projects
+@app.route("/api/queries/4")
+def query_4():
+    # later this will compare regions in sightings vs regions in active projects
+    data = [
+        {"region_id": 2, "region_name": "Burin Peninsula"},
+        {"region_id": 5, "region_name": "Bonavista"},
+    ]
+    return jsonify(data)
+
+# Q5: native species impacted by high risk invasives
+@app.route("/api/queries/5")
+def query_5():
+    # later this will join native_species, impact and invasive_species
+    data = [
+        {
+            "native_scientific_name": "Salmo salar",
+            "native_common_name": "Atlantic salmon",
+            "threat_count": 2,
+        },
+        {
+            "native_scientific_name": "Gadus morhua",
+            "native_common_name": "Atlantic cod",
+            "threat_count": 1,
+        },
+    ]
+    return jsonify(data)
 if __name__ == "__main__":
     app.run(debug=True)
