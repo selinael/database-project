@@ -136,5 +136,95 @@ def list_projects():
         },
     ]
     return jsonify(projects)
+
+
+# Q1: high risk species with no control method
+@app.route("/api/queries/1")
+def query_1():
+    # this will come from joins later, for now just hard coded
+    result = [
+        {
+            "invasive_scientific_name": "Carcinus maenas",
+            "common_name": "European green crab",
+        }
+    ]
+    return jsonify(result)
+# Q2: sightings count by region and risk level
+@app.route("/api/queries/2")
+def query_2():
+    # later this will use group by on the sightings table
+    data = [
+        {"region": "Avalon Peninsula", "risk_level": "high", "count": 40},
+        {"region": "Avalon Peninsula", "risk_level": "medium", "count": 10},
+        {"region": "Gros Morne", "risk_level": "medium", "count": 15},
+        {"region": "Terra Nova", "risk_level": "low", "count": 5},
+    ]
+    return jsonify(data)
+
+# Q3: projects that use 'Manual Removal' as a control method
+@app.route("/api/queries/3")
+def query_3():
+    # later this will join eradication_project and method_project tables
+    data = [
+        {
+            "project_id": 1,
+            "name_of_project": "Operation Shoreline",
+            "status": "active",
+            "method_name": "Manual Removal",
+        },
+        {
+            "project_id": 3,
+            "name_of_project": "Harbour Pilot Study",
+            "status": "completed",
+            "method_name": "Manual Removal",
+        },
+    ]
+    return jsonify(data)
+
+# Q4: regions with sightings but no active projects
+@app.route("/api/queries/4")
+def query_4():
+    # later this will compare regions in sightings vs regions in active projects
+    data = [
+        {"region_id": 2, "region_name": "Burin Peninsula"},
+        {"region_id": 5, "region_name": "Bonavista"},
+    ]
+    return jsonify(data)
+
+# Q5: native species impacted by high risk invasives
+@app.route("/api/queries/5")
+def query_5():
+    # later this will join native_species, impact and invasive_species
+    data = [
+        {
+            "native_scientific_name": "Salmo salar",
+            "native_common_name": "Atlantic salmon",
+            "threat_count": 2,
+        },
+        {
+            "native_scientific_name": "Gadus morhua",
+            "native_common_name": "Atlantic cod",
+            "threat_count": 1,
+        },
+    ]
+    return jsonify(data)
+
+# Q6: population trend (sightings count by year) for one invasive species
+@app.route("/api/queries/6")
+def query_6():
+    # get species from query string, use default if not given
+    species_name = request.args.get("species", "Carcinus maenas")
+
+    # later this will use group by year on the sightings table
+    trend = [
+        {"year": "2022", "total_sightings": 30},
+        {"year": "2023", "total_sightings": 45},
+        {"year": "2024", "total_sightings": 60},
+    ]
+
+    return jsonify({
+        "invasive_scientific_name": species_name,
+        "trend": trend,
+    })
 if __name__ == "__main__":
     app.run(debug=True)
