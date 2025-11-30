@@ -105,6 +105,36 @@ def create_sighting():
     }
 
     return jsonify({"message": "sighting created (placeholder, no db yet)", "sighting": new_sighting}), 201
-
+# list eradication projects
+@app.route("/api/projects")
+def list_projects():
+    # dummy data for now, later will come from the database
+    projects = [
+        {
+            "project_id": 1,
+            "name_of_project": "Operation Shoreline",
+            "objective": "Reduce green crab numbers along the Avalon coast.",
+            "status": "active",
+            "start_date": "2023-05-01",
+            "end_date": None,
+            "lead_organization": "DFO Newfoundland",
+            "budget_planned": 25000.0,
+            "budget_spent": 8000.0,
+            "notes": "focus on trap-based removal",
+        },
+        {
+            "project_id": 2,
+            "name_of_project": "Harbour Cleanup",
+            "objective": "Control tunicate spread in major harbours.",
+            "status": "completed",
+            "start_date": "2022-04-15",
+            "end_date": "2022-10-30",
+            "lead_organization": "City of St. John's",
+            "budget_planned": 18000.0,
+            "budget_spent": 17500.0,
+            "notes": "ran as a pilot project",
+        },
+    ]
+    return jsonify(projects)
 if __name__ == "__main__":
     app.run(debug=True)
