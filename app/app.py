@@ -51,6 +51,57 @@ def list_invasive_species():
         },
     ]
     return jsonify(species)
+# list recent sightings
+@app.route("/api/sightings")
+def list_sightings():
+    # hard coded data for now, will come from the database later
+    sightings = [
+        {
+            "sighting_id": 1,
+            "observed_date": "2024-09-10",
+            "count_estimate": 20,
+            "photo_url": None,
+            "invasive_scientific_name": "Carcinus maenas",
+            "region_id": 1,
+            "reporter_id": 1,
+        },
+        {
+            "sighting_id": 2,
+            "observed_date": "2024-09-12",
+            "count_estimate": 10,
+            "photo_url": None,
+            "invasive_scientific_name": "Codium fragile",
+            "region_id": 2,
+            "reporter_id": 2,
+        },
+    ]
+    return jsonify(sightings)
 
+
+# list recent sightings
+@app.route("/api/sightings")
+def list_sightings():
+    # hard coded data for now, will come from the database later
+    sightings = [
+        {
+            "sighting_id": 1,
+            "observed_date": "2024-09-10",
+            "count_estimate": 20,
+            "photo_url": None,
+            "invasive_scientific_name": "Carcinus maenas",
+            "region_id": 1,
+            "reporter_id": 1,
+        },
+        {
+            "sighting_id": 2,
+            "observed_date": "2024-09-12",
+            "count_estimate": 10,
+            "photo_url": None,
+            "invasive_scientific_name": "Codium fragile",
+            "region_id": 2,
+            "reporter_id": 2,
+        },
+    ]
+    return jsonify(sightings)
 if __name__ == "__main__":
     app.run(debug=True)
