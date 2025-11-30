@@ -1,5 +1,5 @@
-from flask import Flask, jsonify
 
+from flask import Flask, jsonify, request
 app = Flask(__name__)
 
 # homepage: basic stats for the dashboard
@@ -77,31 +77,34 @@ def list_sightings():
     ]
     return jsonify(sightings)
 
+# create a new sighting (dummy implementation for now)
+@app.route("/api/sightings", methods=["POST"])
+def create_sighting():
+    data = request.get_json()
 
-# list recent sightings
-@app.route("/api/sightings")
-def list_sightings():
-    # hard coded data for now, will come from the database later
-    sightings = [
-        {
-            "sighting_id": 1,
-            "observed_date": "2024-09-10",
-            "count_estimate": 20,
-            "photo_url": None,
-            "invasive_scientific_name": "Carcinus maenas",
-            "region_id": 1,
-            "reporter_id": 1,
-        },
-        {
-            "sighting_id": 2,
-            "observed_date": "2024-09-12",
-            "count_estimate": 10,
-            "photo_url": None,
-            "invasive_scientific_name": "Codium fragile",
-            "region_id": 2,
-            "reporter_id": 2,
-        },
-    ]
-    return jsonify(sightings)
+    if data is None:
+        return jsonify({"error": "request body must be json"}), 400
+
+    # simple required fields based on the schema
+    required_fields = ["invasive_scientific_name", "region_id", "reporter_id", "count_estimate"]
+    missing = [f for f in required_fields if f not in data]
+
+    if missing:
+        return jsonify({"error": f"missing fields: {', '.join(missing)}"}), 400
+
+    # in the final version this will insert into the database
+    # for now we just pretend it worked and return the data back
+    new_sighting = {
+        "sighting_id": 999,  # placeholder id
+        "observed_date": data.get("observed_date", "2024-11-30"),
+        "count_estimate": data["count_estimate"],
+        "photo_url": data.get("photo_url"),
+        "invasive_scientific_name": data["invasive_scientific_name"],
+        "region_id": data["region_id"],
+        "reporter_id": data["reporter_id"],
+    }
+
+    return jsonify({"message": "sighting created (placeholder, no db yet)", "sighting": new_sighting}), 201
+
 if __name__ == "__main__":
     app.run(debug=True)
