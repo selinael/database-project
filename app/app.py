@@ -1,18 +1,25 @@
-from flask import Flask
+from flask import Flask, jsonify
 
-# basic flask app for the project
+# simple flask app for the backend
 app = Flask(__name__)
 
-# main page just to check server
+# homepage: return basic stats as json
 @app.route("/")
 def index():
-    return "Invasive Species Monitoring System backend."
+    stats = {
+        "total_species": 5,
+        "total_sightings": 120,
+        "active_projects": 3,
+        "high_risk": 2,
+        "medium_risk": 2,
+        "low_risk": 1,
+    }
+    return jsonify(stats)
 
-# simple test route so we can see different URL working
+# extra route just to check server quickly
 @app.route("/test")
 def test():
-    return "Test route is working."
+    return "test route is working"
 
-# run the app directly (use debug during development)
 if __name__ == "__main__":
     app.run(debug=True)
