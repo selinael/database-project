@@ -166,17 +166,17 @@ INSERT INTO method_project (project_id, method_name) VALUES
 
 -- SIGHTING
 
-INSERT INTO sighting (observed_date, count_estimate, photo_url, invasive_scientific_name, region_id) VALUES
-('2024-06-01', 15, 'photo1.jpg', 'Fallopia japonica', 1),
-('2024-06-03', 0, NULL, 'Fallopia japonica', 5),
-('2024-07-10', 42, 'shore_crab2.png', 'Carcinus maenas', 2),
-('2024-07-12', 8, NULL, 'Carcinus maenas', 4),
-('2024-05-22', 5, 'tunicate.png', 'Ciona intestinalis', 6),
-('2024-08-14', 30, 'crab3.jpg', 'Hemigrapsus sanguineus', 6),
-('2024-05-14', 3, 'reed1.jpg', 'Phragmites australis', 3),
-('2024-04-20', 2, NULL, 'Lythrum salicaria', 1),
-('2024-06-19', 60, 'crab4.png', 'Carcinus maenas', 4),
-('2024-08-01', 1, NULL, 'Fallopia japonica', 1);
+INSERT INTO sighting (observed_date, count_estimate, invasive_scientific_name, region_id) VALUES
+('2024-06-01', 15,'Fallopia japonica', 1),
+('2024-06-03', 0, 'Fallopia japonica', 5),
+('2024-07-10', 42, 'Carcinus maenas', 2),
+('2024-07-12', 8, 'Carcinus maenas', 4),
+('2024-05-22', 5, 'Ciona intestinalis', 6),
+('2024-08-14', 30, 'Hemigrapsus sanguineus', 6),
+('2024-05-14', 3, 'Phragmites australis', 3),
+('2024-04-20', 2, 'Lythrum salicaria', 1),
+('2024-06-19', 60, 'Carcinus maenas', 4),
+('2024-08-01', 1,'Fallopia japonica', 1);
 
 
 -- YEARLY_STATUS

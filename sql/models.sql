@@ -34,7 +34,6 @@ CREATE TABLE sighting (
     sighting_id              INTEGER PRIMARY KEY,
     observed_date            DATE NOT NULL,
     count_estimate           INTEGER CHECK (count_estimate >= 0),
-    photo_url                TEXT,
     invasive_scientific_name TEXT NOT NULL,
     region_id                INTEGER NOT NULL,
     FOREIGN KEY (invasive_scientific_name) REFERENCES invasive_species(invasive_scientific_name),
