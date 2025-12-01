@@ -38,7 +38,7 @@ CREATE TABLE sighting (
     region_id                INTEGER NOT NULL,
     FOREIGN KEY (region_id) REFERENCES region(region_id)
     ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (invasive_scientific_name) REFERENCES invasive_species(invasive_scientific_name)
+    FOREIGN KEY (invasive_scientific_name) REFERENCES invasive_species(invasive_scientific_name),
     ON DELETE CASCADE ON UPDATE CASCADE
 
 );
@@ -129,7 +129,7 @@ CREATE TABLE method_project (
     method_name TEXT NOT NULL,
     PRIMARY KEY (project_id, method_name),
     FOREIGN KEY (project_id) REFERENCES eradication_project(project_id),
-    ON DELETE CASCADE ON UPDATE CASCADE
+    ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (method_name) REFERENCES control_method(method_name),
     ON DELETE CASCADE ON UPDATE CASCADE
 );
