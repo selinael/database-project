@@ -1,12 +1,14 @@
 
 -- REGIONS
 
-INSERT INTO Region (region_name, description) VALUES
-('Avalon Peninsula', 'Coastal region with cliffs and protected seabird areas.'),
-('Central Newfoundland', 'Forested interior, mixed boreal ecosystems.'),
-('Northern Coast', 'Cold marine climate with rugged terrain.'),
-('Western Newfoundland', 'Mountainous region with national parks.'),
-('Labrador Coast', 'Remote and sparsely populated coastal area.');
+INSERT INTO region (region_name, nl_zone) VALUES
+('Avalon Peninsula', 'Eastern'),
+('Burin Peninsula', 'Southern'),
+('Central Newfoundland', 'Central'),
+('Northern Peninsula', 'Northern'),
+('St. John''s', 'Eastern'),
+('Gros Morne', 'Western');
+
 
 
 -- INVASIVE SPECIES
