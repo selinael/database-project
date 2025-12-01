@@ -10,7 +10,9 @@ INSERT INTO region (region_name, nl_zone) VALUES
 ('Gros Morne', 'Western'),
 ('Labrador Coast', 'Northern'),
 ('Bonavista Bay', 'Eastern'),
-('Lake Melville', 'Northern');
+('Lake Melville', 'Northern'),
+('South Coast', 'Southern'),
+('North Harbour', 'Northern');
 
 
 
@@ -102,7 +104,13 @@ INSERT INTO species_region (invasive_scientific_name, region_id) VALUES
 ('Didemnum vexillum', 7), 
 ('Didemnum vexillum', 6),  
 ('Elodea canadensis', 9),  
-('Elodea canadensis', 3);  
+('Elodea canadensis', 3), 
+('Fallopia japonica', 8),
+('Didemnum vexillum', 8),
+('Elodea canadensis', 8),
+('Fallopia japonica', 10),
+('Carcinus maenas', 11),
+('Didemnum vexillum', 11);
 
 
 -- SPECIES_HABITAT (JUNCTION TABLE)
@@ -130,8 +138,7 @@ INSERT INTO species_control_method (invasive_scientific_name, method_name) VALUE
 ('Carcinus maenas', 'Barrier Installation'),
 ('Phragmites australis', 'Chemical Treatment'),
 ('Hemigrapsus sanguineus', 'Public Awareness Campaign'),
-('Didemnum vexillum', 'Hot Water Treatment'),
-
+('Didemnum vexillum', 'Hot Water Treatment');
 
 -- IMPACT (JUNCTION TABLE)
 
@@ -208,7 +215,7 @@ INSERT INTO method_project (project_id, method_name) VALUES
 
     (6, 'Hot Water Treatment'),
 
-    (7, 'Manual Removal');
+    (7, 'Manual Removal'),
 
     (8, 'Chemical Treatment'),
     
@@ -222,6 +229,8 @@ INSERT INTO method_project (project_id, method_name) VALUES
 
 INSERT INTO sighting (observed_date, count_estimate, invasive_scientific_name, region_id) VALUES
 ('2023-06-01', 15,'Fallopia japonica', 1),
+('2023-12-01', 20,'Agrilus planipennis', 1),
+('2022-06-23', 30,'Pseudorasbora parva', 1),
 ('2022-06-03', 0, 'Fallopia japonica', 5),
 ('2024-07-10', 42, 'Carcinus maenas', 2),
 ('2021-07-12', 8, 'Carcinus maenas', 4),
@@ -258,4 +267,10 @@ INSERT INTO yearly_status (presence, population, year, invasive_scientific_name,
 (1, 40, 2024, 'Elodea canadensis', 3),
 (0, 0, 2023, 'Elodea canadensis', 3),  
 (1, 8, 2024, 'Elodea canadensis', 9),
-(1, 0, 2020, 'Carcinus maenas', 7);
+(1, 0, 2020, 'Carcinus maenas', 7),
+(1, 10, 2024, 'Fallopia japonica', 8),
+(1, 5, 2024, 'Didemnum vexillum', 8),
+(1, 20, 2024, 'Elodea canadensis', 8),
+(1, 25, 2024, 'Fallopia japonica', 10),
+(1, 300, 2024, 'Carcinus maenas', 11),
+(1, 1200, 2024, 'Didemnum vexillum', 11);
