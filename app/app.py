@@ -1,6 +1,25 @@
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, g
+import sqlite3
+
 app = Flask(__name__)
+
+
+DATABASE = "database.db"
+
+def get_db():
+    if "db" not in g:
+        g.db = sqlite3.connect(DATABASE)
+        g.db.row_factory = sqlite3.Row
+        g.db.execute("PRAGMA foreign_keys = ON;") 
+
+    return g.db
+
+def close_db(e=None):
+    db = g.pop("db", None)
+    if db is not None:
+        db.close()
+
 
 # homepage: basic stats for the dashboard
 @app.route("/")
