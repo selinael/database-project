@@ -100,3 +100,78 @@ INSERT INTO species_control_method (invasive_scientific_name, method_name) VALUE
 ('Lythrum salicaria', 'Manual Removal'),
 ('Ciona intestinalis', 'Biological Control'),
 ('Hemigrapsus sanguineus', 'Public Awareness Campaign');
+
+
+-- IMPACT (JUNCTION TABLE)
+
+INSERT INTO impact (invasive_scientific_name, scientific_name) VALUES
+('Carcinus maenas', 'Rangifer tarandus'),
+('Carcinus maenas', 'Salmo salar'),
+('Fallopia japonica', 'Tamiasciurus hudsonicus'),
+('Lythrum salicaria', 'Falco columbarius'),
+('Phragmites australis', 'Salmo salar'),
+('Ciona intestinalis', 'Lutra canadensis');
+
+
+-- REGION_HABITAT (JUNCTION TABLE)
+
+INSERT INTO region_habitat (habitat_name, region_id) VALUES
+('Coastal Shores', 2),
+('Coastal Shores', 4),
+('Freshwater Wetlands', 3),
+('Freshwater Wetlands', 1),
+('Forest Edge', 1),
+('Salt Marsh', 6),
+('River Estuary', 6),
+('Open Field', 5);
+
+-- PROJECT_REGION (JUNCTION TABLE)
+
+INSERT INTO project_region (project_id, region_id) VALUES
+(1, 1),
+(1, 5),
+(2, 2),
+(2, 4),
+(4, 3),
+(5, 6);
+
+
+-- SPECIES_PROJECT (JUNCTION TABLE)
+
+INSERT INTO species_project (invasive_scientific_name, project_id) VALUES
+('Fallopia japonica', 1),
+('Carcinus maenas', 2),
+('Lythrum salicaria', 3),
+('Phragmites australis', 4),
+('Carcinus maenas', 5),
+('Ciona intestinalis', 5);
+
+
+-- SIGHTING
+
+INSERT INTO sighting (observed_date, count_estimate, photo_url, invasive_scientific_name, region_id) VALUES
+('2024-06-01', 15, 'photo1.jpg', 'Fallopia japonica', 1),
+('2024-06-03', 0, NULL, 'Fallopia japonica', 5),
+('2024-07-10', 42, 'shore_crab2.png', 'Carcinus maenas', 2),
+('2024-07-12', 8, NULL, 'Carcinus maenas', 4),
+('2024-05-22', 5, 'tunicate.png', 'Ciona intestinalis', 6),
+('2024-08-14', 30, 'crab3.jpg', 'Hemigrapsus sanguineus', 6),
+('2024-05-14', 3, 'reed1.jpg', 'Phragmites australis', 3),
+('2024-04-20', 2, NULL, 'Lythrum salicaria', 1),
+('2024-06-19', 60, 'crab4.png', 'Carcinus maenas', 4),
+('2024-08-01', 1, NULL, 'Fallopia japonica', 1);
+
+
+-- YEARLY_STATUS
+
+INSERT INTO yearly_status (presence, population, year, invasive_scientific_name, region_id) VALUES
+(1, 120, 2023, 'Fallopia japonica', 1),
+(1, 30, 2024, 'Fallopia japonica', 5),
+(1, 800, 2023, 'Carcinus maenas', 2),
+(1, 1500, 2024, 'Carcinus maenas', 4),
+(1, 300, 2024, 'Hemigrapsus sanguineus', 6),
+(1, 5000, 2023, 'Ciona intestinalis', 6),
+(1, 50, 2023, 'Phragmites australis', 3),
+(1, 12, 2024, 'Lythrum salicaria', 1),
+(0, 0, 2022, 'Fallopia japonica', 1),  
+(1, 1, 2024, 'Phragmites australis', 3);
