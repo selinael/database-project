@@ -24,7 +24,13 @@ INSERT INTO invasive_species (invasive_scientific_name, common_name, kingdom, ri
 ('Phragmites australis', 'Common Reed', 'Plantae', 'medium', 2.0, '2013-05-05'),
 ('Lythrum salicaria', 'Purple Loosestrife', 'Plantae', 'low', 0.5, '2011-04-22'),
 ('Didemnum vexillum', 'Marine Carpet Sea Squirt', 'Animalia', 'high', 4.5, '2017-06-18'),
-('Elodea canadensis', 'Canadian Waterweed', 'Plantae', 'medium', 1.2, '2019-09-05');
+('Elodea canadensis', 'Canadian Waterweed', 'Plantae', 'medium', 1.2, '2019-09-05'),
+('Myriophyllum spicatum', 'Eurasian Watermilfoil', 'Plantae', 'high', 3.8, '2019-06-01'),
+('Styela clava', 'Club Tunicate', 'Animalia', 'high', 4.2, '2016-09-10'),
+('Spartina alterniflora', 'Smooth Cordgrass', 'Plantae', 'high', 2.9, '2014-05-12'),
+('Ailanthus altissima', 'Tree-of-heaven', 'Plantae', 'high', 2.5, '2011-03-20'),
+('Agrilus planipennis', 'Emerald Ash Borer', 'Animalia', 'high', 5.0, '2017-07-01'),
+('Pseudorasbora parva', 'Topmouth Gudgeon', 'Animalia', 'high', 4.6, NULL);
 
 
 -- NATIVE_SPECIES
@@ -58,7 +64,14 @@ INSERT INTO control_method (method_name, method_type, cost_estimate, description
 ('Barrier Installation', 'Mechanical', 600.00, 'Physical barriers to restrict spread', 'Medium'),
 ('Public Awareness Campaign', 'Educational', 150.00, 'Community involvement and education', 'Low'),
 ('Hot Water Treatment', 'Physical', 900.00, 'Boiling water flushing for marine organisms', 'Medium-High'),
-('Sediment Removal', 'Mechanical', 1100.00, 'Removing top sediment layer to detach tunicates', 'Medium');
+('Sediment Removal', 'Mechanical', 1100.00, 'Removing top sediment layer to detach tunicates', 'Medium'),
+('Early Detection Rapid Response (EDRR)', 'Surveillance', 500.00, 'Ongoing monitoring with a rapid-response team to eradicate new incursions quickly', 'High'),
+('Sediment Capping', 'Mechanical', 2500.00, 'Place a clean cap over contaminated sediments to bury benthic invasives', 'Medium'),
+('Public Incentive Program', 'Educational', 400.00, 'Grants or incentives to encourage private landowners to remove invasives', 'Low-Medium'),
+('Integrated Pest Management', 'Integrated', 1200.00, 'Combines biological, chemical and mechanical techniques tailored to site-specific conditions', 'High'),
+('Habitat Restoration', 'Ecological', 2000.00, 'Restore native vegetation and hydrology to reduce habitat suitability for invasives', 'Medium-High'),
+('Physical Exclusion', 'Mechanical', 700.00, 'Netting, screening or fencing to prevent movement and establishment of species', 'Medium-High'),
+('Quarantine & Biosecurity', 'Policy', 300.00, 'Decontamination and movement controls for boats, equipment, stock and soil', 'High');
 
 
 -- ERADICATION_PROJECT
@@ -70,7 +83,10 @@ INSERT INTO eradication_project (name_of_project, objective, status, start_date,
 ('Reed Management Program', 'Prevent spread to protected wetlands', 'planning', '2025-01-01', NULL, 'Parks Canada', 50000, 0, 'Initial planning'),
 ('Crab Impact Study', 'Study ecosystem effects', 'on-hold', '2023-01-10', NULL, 'Memorial University', 20000, 5000, 'Paused due to storms'),
 ('Marine Tunicate Response Team', 'Reduce invasive tunicate densities', 'active', '2023-04-10', NULL, 'DFO', 60000, 20000, 'Ongoing marine surveys'),
-('Elodea Containment Pilot', 'Limit spread of Elodea in lakes', 'planning', '2025-05-01', NULL, 'NL Environment', 15000, 0, 'Initial containment design');
+('Elodea Containment Pilot', 'Limit spread of Elodea in lakes', 'planning', '2025-05-01', NULL, 'NL Environment', 15000, 0, 'Initial containment design'),
+('Cordgrass Removal Initiative', 'Control Spartina alterniflora in estuaries', 'active', '2025-03-01', NULL, 'DFO', 40000, 5000, 'Chemical marsh treatment trials'),
+('Emerald Ash Borer Mitigation', 'Protect ash stands near communities', 'planning', '2025-06-01', NULL, 'NL Forestry Division', 60000, 0, 'Chemical trunk injections planned'),
+('Topmouth Gudgeon Eradication', 'Eradicate Pseudorasbora parva from small lakes', 'active', '2024-09-01', NULL, 'NL Environment', 35000, 12000, 'Rotenone treatments under permit');
 
 -- SPECIES_REGION (JUNCTION TABLE)
 
@@ -115,7 +131,6 @@ INSERT INTO species_control_method (invasive_scientific_name, method_name) VALUE
 ('Phragmites australis', 'Chemical Treatment'),
 ('Hemigrapsus sanguineus', 'Public Awareness Campaign'),
 ('Didemnum vexillum', 'Hot Water Treatment'),
-('Didemnum vexillum', 'Sediment Removal');
 
 
 -- IMPACT (JUNCTION TABLE)
@@ -180,7 +195,7 @@ INSERT INTO method_project (project_id, method_name) VALUES
     (1, 'Manual Removal'),
     (1, 'Chemical Treatment'),
 
-    (2, 'Biological Control'),
+    (2, 'Chemical Treatment'),
     (2, 'Trapping Program'),
 
     (3, 'Public Awareness Campaign'),
@@ -192,9 +207,14 @@ INSERT INTO method_project (project_id, method_name) VALUES
     (5, 'Public Awareness Campaign'),
 
     (6, 'Hot Water Treatment'),
-    (6, 'Sediment Removal'),
 
     (7, 'Manual Removal');
+
+    (8, 'Chemical Treatment'),
+    
+    (9, 'Chemical Treatment'),
+    
+    (10, 'Chemical Treatment');
 
 
 
