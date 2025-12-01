@@ -8,6 +8,8 @@ INSERT INTO region (region_name, nl_zone) VALUES
 ('Northern Peninsula', 'Northern'),
 ('St. John''s', 'Eastern'),
 ('Gros Morne', 'Western');
+('Labrador Coast', 'Northern'),
+('Bonavista Bay', 'Eastern');
 
 
 
@@ -20,7 +22,8 @@ INSERT INTO invasive_species (invasive_scientific_name, common_name, kingdom, ri
 ('Carcinus maenas', 'European Green Crab', 'Animalia', 'high', 5.2, '2007-07-20'),
 ('Phragmites australis', 'Common Reed', 'Plantae', 'medium', 2.0, '2013-05-05'),
 ('Lythrum salicaria', 'Purple Loosestrife', 'Plantae', 'low', 0.5, '2011-04-22');
-
+('Didemnum vexillum', 'Marine Carpet Sea Squirt', 'Animalia', 'high', 4.5, '2017-06-18'),
+('Elodea canadensis', 'Canadian Waterweed', 'Plantae', 'medium', 1.2, '2019-09-05');
 
 
 -- NATIVE_SPECIES
@@ -41,6 +44,8 @@ INSERT INTO habitat (habitat_name, type, description) VALUES
 ('Salt Marsh', 'Wetland', 'Coastal wetland influenced by tides'),
 ('River Estuary', 'Aquatic', 'Brackish water mixing zones'),
 ('Open Field', 'Grassland', 'Non-forested fields and meadows');
+('Tidal Flats', 'Coastal', 'Intertidal zones with sediment'),
+('Deep Marine Zone', 'Aquatic', 'Cold deep-water marine environment');
 
 -- CONTROL_METHOD
 
@@ -51,6 +56,8 @@ INSERT INTO control_method (method_name, method_type, cost_estimate, description
 ('Trapping Program', 'Physical', 300.00, 'Capture and removal traps', 'Low-Medium'),
 ('Barrier Installation', 'Mechanical', 600.00, 'Physical barriers to restrict spread', 'Medium'),
 ('Public Awareness Campaign', 'Educational', 150.00, 'Community involvement and education', 'Low');
+('Hot Water Treatment', 'Physical', 900.00, 'Boiling water flushing for marine organisms', 'Medium-High'),
+('Sediment Removal', 'Mechanical', 1100.00, 'Removing top sediment layer to detach tunicates', 'Medium');
 
 
 -- ERADICATION_PROJECT
@@ -61,7 +68,8 @@ INSERT INTO eradication_project (name_of_project, objective, status, start_date,
 ('Loosestrife Survey', 'Determine spread across NL', 'completed', '2022-05-01', '2022-09-20', 'NL Wildlife', 10000, 12500, 'Over budget due to extra fieldwork'),
 ('Reed Management Program', 'Prevent spread to protected wetlands', 'planning', '2025-01-01', NULL, 'Parks Canada', 50000, 0, 'Initial planning'),
 ('Crab Impact Study', 'Study ecosystem effects', 'on-hold', '2023-01-10', NULL, 'Memorial University', 20000, 5000, 'Paused due to storms');
-
+('Marine Tunicate Response Team', 'Reduce invasive tunicate densities', 'active', '2023-04-10', NULL, 'DFO', 60000, 20000, 'Ongoing marine surveys'),
+('Elodea Containment Pilot', 'Limit spread of Elodea in lakes', 'planning', '2025-05-01', NULL, 'NL Environment', 15000, 0, 'Initial containment design');
 
 -- SPECIES_REGION (JUNCTION TABLE)
 
@@ -74,6 +82,10 @@ INSERT INTO species_region (invasive_scientific_name, region_id) VALUES
 ('Ciona intestinalis', 6),
 ('Phragmites australis', 3),
 ('Lythrum salicaria', 1);
+('Didemnum vexillum', 7), 
+('Didemnum vexillum', 6),  
+('Elodea canadensis', 9),  
+('Elodea canadensis', 3);  
 
 
 -- SPECIES_HABITAT (JUNCTION TABLE)
@@ -87,6 +99,9 @@ INSERT INTO species_habitat (invasive_scientific_name, habitat_name) VALUES
 ('Lythrum salicaria', 'Freshwater Wetlands'),
 ('Hemigrapsus sanguineus', 'Coastal Shores'),
 ('Carcinus maenas', 'Salt Marsh');
+('Didemnum vexillum', 'Deep Marine Zone'),
+('Didemnum vexillum', 'Tidal Flats'),
+('Elodea canadensis', 'Freshwater Wetlands');
 
 
 -- SPECIES_CONTROL_METHOD (JUNCTION TABLE)
@@ -98,6 +113,8 @@ INSERT INTO species_control_method (invasive_scientific_name, method_name) VALUE
 ('Carcinus maenas', 'Barrier Installation'),
 ('Phragmites australis', 'Chemical Treatment'),
 ('Hemigrapsus sanguineus', 'Public Awareness Campaign');
+('Didemnum vexillum', 'Hot Water Treatment'),
+('Didemnum vexillum', 'Sediment Removal');
 
 
 -- IMPACT (JUNCTION TABLE)
@@ -109,6 +126,8 @@ INSERT INTO impact (invasive_scientific_name, scientific_name) VALUES
 ('Lythrum salicaria', 'Falco columbarius'),
 ('Phragmites australis', 'Salmo salar'),
 ('Ciona intestinalis', 'Lutra canadensis');
+('Didemnum vexillum', 'Salmo salar'),
+('Elodea canadensis', 'Lutra canadensis');
 
 
 -- REGION_HABITAT (JUNCTION TABLE)
@@ -122,6 +141,9 @@ INSERT INTO region_habitat (habitat_name, region_id) VALUES
 ('Salt Marsh', 6),
 ('River Estuary', 6),
 ('Open Field', 5);
+('Tidal Flats', 7),  
+('Deep Marine Zone', 7),
+('Freshwater Wetlands', 9); 
 
 -- PROJECT_REGION (JUNCTION TABLE)
 
@@ -132,6 +154,10 @@ INSERT INTO project_region (project_id, region_id) VALUES
 (2, 4),
 (4, 3),
 (5, 6);
+(6, 7),
+(6, 6),
+(7, 9),
+(7, 3);
 
 
 -- SPECIES_PROJECT (JUNCTION TABLE)
@@ -143,6 +169,8 @@ INSERT INTO species_project (invasive_scientific_name, project_id) VALUES
 ('Phragmites australis', 4),
 ('Carcinus maenas', 5),
 ('Ciona intestinalis', 5);
+('Didemnum vexillum', 6),
+('Elodea canadensis', 7);
 
 
 -- METHOD_PROJECT (JUNCTION TABLE)
@@ -162,21 +190,32 @@ INSERT INTO method_project (project_id, method_name) VALUES
     (5, 'Biological Control'),
     (5, 'Public Awareness Campaign');
 
+    (6, 'Hot Water Treatment'),
+    (6, 'Sediment Removal'),
+
+    (7, 'Manual Removal');
+
 
 
 -- SIGHTING
 
 INSERT INTO sighting (observed_date, count_estimate, invasive_scientific_name, region_id) VALUES
-('2024-06-01', 15,'Fallopia japonica', 1),
-('2024-06-03', 0, 'Fallopia japonica', 5),
+('2023-06-01', 15,'Fallopia japonica', 1),
+('2022-06-03', 0, 'Fallopia japonica', 5),
 ('2024-07-10', 42, 'Carcinus maenas', 2),
-('2024-07-12', 8, 'Carcinus maenas', 4),
+('2021-07-12', 8, 'Carcinus maenas', 4),
 ('2024-05-22', 5, 'Ciona intestinalis', 6),
 ('2024-08-14', 30, 'Hemigrapsus sanguineus', 6),
 ('2024-05-14', 3, 'Phragmites australis', 3),
-('2024-04-20', 2, 'Lythrum salicaria', 1),
+('2025-04-20', 2, 'Lythrum salicaria', 1),
 ('2024-06-19', 60, 'Carcinus maenas', 4),
 ('2024-08-01', 1,'Fallopia japonica', 1);
+('2024-09-12', 200, 'Didemnum vexillum', 7),
+('2023-07-21', 540, 'Didemnum vexillum', 6),
+('2024-05-11', 12, 'Elodea canadensis', 3),
+('2024-06-14', 0, 'Elodea canadensis', 9),
+('2023-10-02', 85, 'Carcinus maenas', 7),
+('2024-01-19', 1, 'Fallopia japonica', 9);
 
 
 -- YEARLY_STATUS
@@ -192,3 +231,10 @@ INSERT INTO yearly_status (presence, population, year, invasive_scientific_name,
 (1, 12, 2024, 'Lythrum salicaria', 1),
 (0, 0, 2022, 'Fallopia japonica', 1),  
 (1, 1, 2024, 'Phragmites australis', 3);
+(1, 3200, 2023, 'Didemnum vexillum', 7),
+(1, 3500, 2024, 'Didemnum vexillum', 7),
+(0, 0, 2022, 'Didemnum vexillum', 7),  
+(1, 40, 2024, 'Elodea canadensis', 3),
+(0, 0, 2023, 'Elodea canadensis', 3),  
+(1, 8, 2024, 'Elodea canadensis', 9),
+(1, 0, 2020, 'Carcinus maenas', 7);

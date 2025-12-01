@@ -36,8 +36,11 @@ CREATE TABLE sighting (
     count_estimate           INTEGER CHECK (count_estimate >= 0),
     invasive_scientific_name TEXT NOT NULL,
     region_id                INTEGER NOT NULL,
-    FOREIGN KEY (invasive_scientific_name) REFERENCES invasive_species(invasive_scientific_name),
     FOREIGN KEY (region_id) REFERENCES region(region_id)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (invasive_scientific_name) REFERENCES invasive_species(invasive_scientific_name)
+    ON DELETE CASCADE ON UPDATE CASCADE
+
 );
 
 
@@ -87,7 +90,9 @@ CREATE TABLE yearly_status (
     invasive_scientific_name TEXT NOT NULL,
     region_id                INTEGER NOT NULL,
     FOREIGN KEY (invasive_scientific_name) REFERENCES invasive_species(invasive_scientific_name),
-    FOREIGN KEY (region_id) REFERENCES region(region_id)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (region_id) REFERENCES region(region_id),
+    ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 
@@ -98,7 +103,9 @@ CREATE TABLE species_control_method (
     method_name              TEXT NOT NULL,
     PRIMARY KEY (invasive_scientific_name, method_name),
     FOREIGN KEY (invasive_scientific_name) REFERENCES invasive_species(invasive_scientific_name),
-    FOREIGN KEY (method_name) REFERENCES control_method(method_name)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (method_name) REFERENCES control_method(method_name),
+    ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 
@@ -109,7 +116,9 @@ CREATE TABLE species_habitat (
     habitat_name             TEXT NOT NULL,
     PRIMARY KEY (invasive_scientific_name, habitat_name),
     FOREIGN KEY (invasive_scientific_name) REFERENCES invasive_species(invasive_scientific_name),
-    FOREIGN KEY (habitat_name) REFERENCES habitat(habitat_name)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (habitat_name) REFERENCES habitat(habitat_name),
+    ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 
@@ -120,7 +129,9 @@ CREATE TABLE method_project (
     method_name TEXT NOT NULL,
     PRIMARY KEY (project_id, method_name),
     FOREIGN KEY (project_id) REFERENCES eradication_project(project_id),
-    FOREIGN KEY (method_name) REFERENCES control_method(method_name)
+    ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY (method_name) REFERENCES control_method(method_name),
+    ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 
@@ -131,7 +142,9 @@ CREATE TABLE species_region (
     region_id                INTEGER NOT NULL,
     PRIMARY KEY (invasive_scientific_name, region_id),
     FOREIGN KEY (invasive_scientific_name) REFERENCES invasive_species(invasive_scientific_name),
-    FOREIGN KEY (region_id) REFERENCES region(region_id)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (region_id) REFERENCES region(region_id),
+    ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 
@@ -142,7 +155,9 @@ CREATE TABLE impact (
     scientific_name          TEXT NOT NULL,
     PRIMARY KEY (invasive_scientific_name, scientific_name),
     FOREIGN KEY (invasive_scientific_name) REFERENCES invasive_species(invasive_scientific_name),
-    FOREIGN KEY (scientific_name) REFERENCES native_species(scientific_name)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (scientific_name) REFERENCES native_species(scientific_name),
+    ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 
@@ -153,7 +168,9 @@ CREATE TABLE region_habitat (
     region_id    INTEGER NOT NULL,
     PRIMARY KEY (habitat_name, region_id),
     FOREIGN KEY (habitat_name) REFERENCES habitat(habitat_name),
-    FOREIGN KEY (region_id) REFERENCES region(region_id)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (region_id) REFERENCES region(region_id),
+    ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 
@@ -164,7 +181,9 @@ CREATE TABLE project_region (
     region_id  INTEGER NOT NULL,
     PRIMARY KEY (project_id, region_id),
     FOREIGN KEY (project_id) REFERENCES eradication_project(project_id),
-    FOREIGN KEY (region_id) REFERENCES region(region_id)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (region_id) REFERENCES region(region_id),
+    ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 
@@ -175,5 +194,7 @@ CREATE TABLE species_project (
     project_id               INTEGER NOT NULL,
     PRIMARY KEY (invasive_scientific_name, project_id),
     FOREIGN KEY (invasive_scientific_name) REFERENCES invasive_species(invasive_scientific_name),
-    FOREIGN KEY (project_id) REFERENCES eradication_project(project_id)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (project_id) REFERENCES eradication_project(project_id),
+    ON DELETE CASCADE ON UPDATE CASCADE
 );
