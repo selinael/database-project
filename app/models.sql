@@ -12,7 +12,6 @@ CREATE TABLE native_species (
 CREATE TABLE region (
     region_id    INTEGER PRIMARY KEY,
     region_name  TEXT NOT NULL UNIQUE,
-    region_type  TEXT,
     nl_zone      TEXT
 );
 
