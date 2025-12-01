@@ -5,7 +5,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).parent                       #folder where this script lives
 DB_PATH = BASE_DIR / "database.db"     
 SCHEMA_PATH = BASE_DIR / "models.sql"                  #CREATE TABLE statements
-DATA_PATH = BASE_DIR / "sample_data.sql"               #INSERT statements
+DATA_PATH = BASE_DIR / "data.sql"               #INSERT statements
 
 #Execute an entire SQL file
 def run_sql_file(conn, path):
