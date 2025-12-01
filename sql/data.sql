@@ -46,7 +46,7 @@ INSERT INTO habitat (habitat_name, type, description) VALUES
 
 INSERT INTO control_method (method_name, method_type, cost_estimate, description, effectiveness_range) VALUES
 ('Manual Removal', 'Physical', 200.00, 'Hand-pulling or digging invasive roots', 'Low-Medium'),
-('Herbicide Spray', 'Chemical', 450.00, 'Selective herbicide application', 'Medium-High'),
+('Chemical Treatment', 'Chemical', 450.00, 'Selective herbicide application', 'Medium-High'),
 ('Biological Control', 'Biological', 800.00, 'Introducing natural predators', 'Medium'),
 ('Trapping Program', 'Physical', 300.00, 'Capture and removal traps', 'Low-Medium'),
 ('Barrier Installation', 'Mechanical', 600.00, 'Physical barriers to restrict spread', 'Medium'),
@@ -93,12 +93,10 @@ INSERT INTO species_habitat (invasive_scientific_name, habitat_name) VALUES
 
 INSERT INTO species_control_method (invasive_scientific_name, method_name) VALUES
 ('Fallopia japonica', 'Manual Removal'),
-('Fallopia japonica', 'Herbicide Spray'),
+('Fallopia japonica', 'Chemical Treatment'),
 ('Carcinus maenas', 'Trapping Program'),
 ('Carcinus maenas', 'Barrier Installation'),
-('Phragmites australis', 'Herbicide Spray'),
-('Lythrum salicaria', 'Manual Removal'),
-('Ciona intestinalis', 'Biological Control'),
+('Phragmites australis', 'Chemical Treatment'),
 ('Hemigrapsus sanguineus', 'Public Awareness Campaign');
 
 
@@ -145,6 +143,25 @@ INSERT INTO species_project (invasive_scientific_name, project_id) VALUES
 ('Phragmites australis', 4),
 ('Carcinus maenas', 5),
 ('Ciona intestinalis', 5);
+
+
+-- METHOD_PROJECT (JUNCTION TABLE)
+
+INSERT INTO method_project (project_id, method_name) VALUES
+    (1, 'Manual Removal'),
+    (1, 'Chemical Treatment'),
+
+    (2, 'Biological Control'),
+    (2, 'Trapping Program'),
+
+    (3, 'Public Awareness Campaign'),
+
+    (4, 'Manual Removal'),
+    (4, 'Barrier Installation'),
+
+    (5, 'Biological Control'),
+    (5, 'Public Awareness Campaign');
+
 
 
 -- SIGHTING
