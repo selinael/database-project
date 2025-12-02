@@ -364,18 +364,35 @@ def query_5():
         })
 
     return jsonify(data)
-# Q6: population trend (sightings count by year) for one invasive species
+# Q6: population trend (sightings count by year) for one invasive species (real data)
 @app.route("/api/queries/6")
 def query_6():
     # get species from query string, use default if not given
     species_name = request.args.get("species", "Carcinus maenas")
 
-    # later this will use group by year on the sightings table
-    trend = [
-        {"year": "2022", "total_sightings": 30},
-        {"year": "2023", "total_sightings": 45},
-        {"year": "2024", "total_sightings": 60},
-    ]
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # group sightings by year for the selected species
+    cur.execute("""
+        SELECT
+            strftime('%Y', observed_date) AS year,
+            COUNT(*) AS total_sightings
+        FROM sighting
+        WHERE invasive_scientific_name = ?
+        GROUP BY year
+        ORDER BY year;
+    """, (species_name,))
+
+    rows = cur.fetchall()
+    conn.close()
+
+    trend = []
+    for row in rows:
+        trend.append({
+            "year": row["year"],
+            "total_sightings": row["total_sightings"],
+        })
 
     return jsonify({
         "invasive_scientific_name": species_name,
