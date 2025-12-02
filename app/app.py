@@ -230,16 +230,38 @@ def query_1():
         })
 
     return jsonify(result)
-# Q2: sightings count by region and risk level
+# Q2: sightings count by region and risk level (real data)
 @app.route("/api/queries/2")
 def query_2():
-    # later this will use group by on the sightings table
-    data = [
-        {"region": "Avalon Peninsula", "risk_level": "high", "count": 40},
-        {"region": "Avalon Peninsula", "risk_level": "medium", "count": 10},
-        {"region": "Gros Morne", "risk_level": "medium", "count": 15},
-        {"region": "Terra Nova", "risk_level": "low", "count": 5},
-    ]
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # join sighting with region and invasive_species, then group by region + risk
+    cur.execute("""
+        SELECT
+            r.region_name AS region,
+            i.risk_level AS risk_level,
+            COUNT(s.sighting_id) AS sighting_count
+        FROM sighting AS s
+        JOIN region AS r
+            ON s.region_id = r.region_id
+        JOIN invasive_species AS i
+            ON s.invasive_scientific_name = i.invasive_scientific_name
+        GROUP BY r.region_name, i.risk_level
+        ORDER BY r.region_name, i.risk_level;
+    """)
+
+    rows = cur.fetchall()
+    conn.close()
+
+    data = []
+    for row in rows:
+        data.append({
+            "region": row["region"],
+            "risk_level": row["risk_level"],
+            "count": row["sighting_count"],
+        })
+
     return jsonify(data)
 
 # Q3: projects that use 'Manual Removal' as a control method
