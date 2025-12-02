@@ -331,24 +331,39 @@ def query_4():
 
     return jsonify(data)
 
-# Q5: native species impacted by high risk invasives
+# Q5: native species impacted by high risk invasives (real data)
 @app.route("/api/queries/5")
 def query_5():
-    # later this will join native_species, impact and invasive_species
-    data = [
-        {
-            "native_scientific_name": "Salmo salar",
-            "native_common_name": "Atlantic salmon",
-            "threat_count": 2,
-        },
-        {
-            "native_scientific_name": "Gadus morhua",
-            "native_common_name": "Atlantic cod",
-            "threat_count": 1,
-        },
-    ]
-    return jsonify(data)
+    conn = get_db_connection()
+    cur = conn.cursor()
 
+    cur.execute("""
+        SELECT
+            n.scientific_name AS native_scientific_name,
+            n.common_name    AS native_common_name,
+            COUNT(*)         AS threat_count
+        FROM native_species AS n
+        JOIN impact AS im
+            ON n.scientific_name = im.scientific_name
+        JOIN invasive_species AS inv
+            ON im.invasive_scientific_name = inv.invasive_scientific_name
+        WHERE inv.risk_level = 'high'
+        GROUP BY n.scientific_name, n.common_name
+        ORDER BY threat_count DESC, n.common_name;
+    """)
+
+    rows = cur.fetchall()
+    conn.close()
+
+    data = []
+    for row in rows:
+        data.append({
+            "native_scientific_name": row["native_scientific_name"],
+            "native_common_name": row["native_common_name"],
+            "threat_count": row["threat_count"],
+        })
+
+    return jsonify(data)
 # Q6: population trend (sightings count by year) for one invasive species
 @app.route("/api/queries/6")
 def query_6():
