@@ -15,18 +15,46 @@ def get_db_connection():
     return conn
 
 # homepage: basic stats for the dashboard
+# homepage: basic stats for the dashboard (now from database)
 @app.route("/")
 def index():
-    stats = {
-        "total_species": 5,
-        "total_sightings": 120,
-        "active_projects": 3,
-        "high_risk": 2,
-        "medium_risk": 2,
-        "low_risk": 1,
-    }
-    return jsonify(stats)
+    conn = get_db_connection()
+    cur = conn.cursor()
 
+    # total number of invasive species
+    cur.execute("SELECT COUNT(*) FROM invasive_species;")
+    total_species = cur.fetchone()[0]
+
+    # total number of sightings
+    cur.execute("SELECT COUNT(*) FROM sighting;")
+    total_sightings = cur.fetchone()[0]
+
+    # projects that are currently active
+    cur.execute("SELECT COUNT(*) FROM eradication_project WHERE status = 'active';")
+    active_projects = cur.fetchone()[0]
+
+    # counts by risk level
+    cur.execute("SELECT COUNT(*) FROM invasive_species WHERE risk_level = 'high';")
+    high_risk = cur.fetchone()[0]
+
+    cur.execute("SELECT COUNT(*) FROM invasive_species WHERE risk_level = 'medium';")
+    medium_risk = cur.fetchone()[0]
+
+    cur.execute("SELECT COUNT(*) FROM invasive_species WHERE risk_level = 'low';")
+    low_risk = cur.fetchone()[0]
+
+    conn.close()
+
+    stats = {
+        "total_species": total_species,
+        "total_sightings": total_sightings,
+        "active_projects": active_projects,
+        "high_risk": high_risk,
+        "medium_risk": medium_risk,
+        "low_risk": low_risk,
+    }
+
+    return jsonify(stats)
 # simple route to check server
 @app.route("/test")
 def test():
