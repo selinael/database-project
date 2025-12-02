@@ -298,14 +298,37 @@ def query_3():
 
     return jsonify(data)
 
-# Q4: regions with sightings but no active projects
+# Q4: regions with sightings but no active projects (real data)
 @app.route("/api/queries/4")
 def query_4():
-    # later this will compare regions in sightings vs regions in active projects
-    data = [
-        {"region_id": 2, "region_name": "Burin Peninsula"},
-        {"region_id": 5, "region_name": "Bonavista"},
-    ]
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT DISTINCT r.region_id, r.region_name
+        FROM region AS r
+        JOIN sighting AS s
+            ON r.region_id = s.region_id
+        WHERE r.region_id NOT IN (
+            SELECT pr.region_id
+            FROM project_region AS pr
+            JOIN eradication_project AS ep
+                ON pr.project_id = ep.project_id
+            WHERE ep.status = 'active'
+        )
+        ORDER BY r.region_id;
+    """)
+
+    rows = cur.fetchall()
+    conn.close()
+
+    data = []
+    for row in rows:
+        data.append({
+            "region_id": row["region_id"],
+            "region_name": row["region_name"]
+        })
+
     return jsonify(data)
 
 # Q5: native species impacted by high risk invasives
