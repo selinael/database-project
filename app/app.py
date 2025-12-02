@@ -128,7 +128,7 @@ def list_sightings():
         })
 
     return jsonify(sightings)
-# create a new sighting (dummy implementation for now)
+# create a new sighting (real insert into SQLite)
 @app.route("/api/sightings", methods=["POST"])
 def create_sighting():
     data = request.get_json()
@@ -136,27 +136,59 @@ def create_sighting():
     if data is None:
         return jsonify({"error": "request body must be json"}), 400
 
-    # simple required fields based on the schema
-    required_fields = ["invasive_scientific_name", "region_id", "reporter_id", "count_estimate"]
+    # required fields based on the sighting table
+    required_fields = ["invasive_scientific_name", "region_id", "count_estimate"]
     missing = [f for f in required_fields if f not in data]
 
     if missing:
         return jsonify({"error": f"missing fields: {', '.join(missing)}"}), 400
 
-    # in the final version this will insert into the database
-    # for now we just pretend it worked and return the data back
+    # basic type handling / defaults
+    invasive_scientific_name = data["invasive_scientific_name"]
+    region_id = int(data["region_id"])
+    count_estimate = int(data["count_estimate"])
+    photo_url = data.get("photo_url")
+
+    if count_estimate < 0:
+        return jsonify({"error": "count_estimate must be >= 0"}), 400
+
+    # if no date is sent, use today's date in ISO format
+    observed_date = data.get("observed_date")
+    if not observed_date:
+        observed_date = date.today().isoformat()
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # insert the new sighting row
+    cur.execute("""
+        INSERT INTO sighting (
+            observed_date,
+            count_estimate,
+            photo_url,
+            invasive_scientific_name,
+            region_id
+        )
+        VALUES (?, ?, ?, ?, ?);
+    """, (observed_date, count_estimate, photo_url, invasive_scientific_name, region_id))
+
+    conn.commit()
+    new_id = cur.lastrowid
+    conn.close()
+
     new_sighting = {
-        "sighting_id": 999,  # placeholder id
-        "observed_date": data.get("observed_date", "2024-11-30"),
-        "count_estimate": data["count_estimate"],
-        "photo_url": data.get("photo_url"),
-        "invasive_scientific_name": data["invasive_scientific_name"],
-        "region_id": data["region_id"],
-        "reporter_id": data["reporter_id"],
+        "sighting_id": new_id,
+        "observed_date": observed_date,
+        "count_estimate": count_estimate,
+        "photo_url": photo_url,
+        "invasive_scientific_name": invasive_scientific_name,
+        "region_id": region_id,
     }
 
-    return jsonify({"message": "sighting created (placeholder, no db yet)", "sighting": new_sighting}), 201
-
+    return jsonify({
+        "message": "sighting created",
+        "sighting": new_sighting,
+    }), 201
 # list eradication projects (now from sqlite)
 @app.route("/api/projects")
 def list_projects():
