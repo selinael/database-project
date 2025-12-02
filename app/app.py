@@ -1,9 +1,22 @@
 
+from flask import Flask, jsonify, request
+import sqlite3
+from pathlib import Path
 from flask import Flask, jsonify, request , render_template
 import sqlite3
 from pathlib import Path
 from datetime import date
 app = Flask(__name__)
+# path to the sqlite database file
+APP_DIR = Path(__file__).resolve().parent          # .../database-project/app
+PROJECT_ROOT = APP_DIR.parent                      # .../database-project
+DB_PATH = PROJECT_ROOT / "sql" / "database.db"     # .../database-project/sql/database.db
+
+def get_db_connection():
+    """simple helper to open a sqlite connection"""
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row  # so we can access columns by name
+    return conn
 
 @app.route('/dashboard')
 def dashboard():
@@ -67,6 +80,7 @@ def test():
     return "test route is working"
 
 # list of invasive species and basic details (now from sqlite)
+# list of invasive species and basic details (now from sqlite)
 @app.route("/api/invasive-species")
 def list_invasive_species():
     conn = get_db_connection()
@@ -99,7 +113,39 @@ def list_invasive_species():
             "first_record_in_nl": row["first_record_in_nl"],
         })
 
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT 
+            invasive_scientific_name,
+            common_name,
+            kingdom,
+            risk_level,
+            spread_rate,
+            first_record_in_nl
+        FROM invasive_species
+        ORDER BY common_name
+    """)
+
+    rows = cur.fetchall()
+    conn.close()
+
+    # convert sqlite rows to plain dicts for json
+    species = []
+    for row in rows:
+        species.append({
+            "invasive_scientific_name": row["invasive_scientific_name"],
+            "common_name": row["common_name"],
+            "kingdom": row["kingdom"],
+            "risk_level": row["risk_level"],
+            "spread_rate": row["spread_rate"],
+            "first_record_in_nl": row["first_record_in_nl"],
+        })
+
     return jsonify(species)
+
+# list recent sightings
 
 # list recent sightings (now loaded from sqlite)
 @app.route("/api/sightings")
