@@ -1,25 +1,18 @@
 
-from flask import Flask, jsonify, request, g
+from flask import Flask, jsonify, request
 import sqlite3
-
+from pathlib import Path
 app = Flask(__name__)
+# path to the sqlite database file
+APP_DIR = Path(__file__).resolve().parent          # .../database-project/app
+PROJECT_ROOT = APP_DIR.parent                      # .../database-project
+DB_PATH = PROJECT_ROOT / "sql" / "database.db"     # .../database-project/sql/database.db
 
-
-DATABASE = "database.db"
-
-def get_db():
-    if "db" not in g:
-        g.db = sqlite3.connect(DATABASE)
-        g.db.row_factory = sqlite3.Row
-        g.db.execute("PRAGMA foreign_keys = ON;") 
-
-    return g.db
-
-def close_db(e=None):
-    db = g.pop("db", None)
-    if db is not None:
-        db.close()
-
+def get_db_connection():
+    """simple helper to open a sqlite connection"""
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row  # so we can access columns by name
+    return conn
 
 # homepage: basic stats for the dashboard
 @app.route("/")
@@ -39,37 +32,41 @@ def index():
 def test():
     return "test route is working"
 
-# list of invasive species and basic details
+# list of invasive species and basic details (now from sqlite)
 @app.route("/api/invasive-species")
 def list_invasive_species():
-    # for now this is hard coded data, later we can load it from the database
-    species = [
-        {
-            "invasive_scientific_name": "Carcinus maenas",
-            "common_name": "European green crab",
-            "kingdom": "Animalia",
-            "risk_level": "high",
-            "spread_rate": 15.5,
-            "first_record_in_nl": "2007-06-15",
-        },
-        {
-            "invasive_scientific_name": "Codium fragile",
-            "common_name": "Oyster thief",
-            "kingdom": "Plantae",
-            "risk_level": "medium",
-            "spread_rate": 8.3,
-            "first_record_in_nl": "1989-07-10",
-        },
-        {
-            "invasive_scientific_name": "Littorina littorea",
-            "common_name": "Common periwinkle",
-            "kingdom": "Animalia",
-            "risk_level": "low",
-            "spread_rate": 2.0,
-            "first_record_in_nl": "1860-01-01",
-        },
-    ]
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT 
+            invasive_scientific_name,
+            common_name,
+            kingdom,
+            risk_level,
+            spread_rate,
+            first_record_in_nl
+        FROM invasive_species
+        ORDER BY common_name
+    """)
+
+    rows = cur.fetchall()
+    conn.close()
+
+    # convert sqlite rows to plain dicts for json
+    species = []
+    for row in rows:
+        species.append({
+            "invasive_scientific_name": row["invasive_scientific_name"],
+            "common_name": row["common_name"],
+            "kingdom": row["kingdom"],
+            "risk_level": row["risk_level"],
+            "spread_rate": row["spread_rate"],
+            "first_record_in_nl": row["first_record_in_nl"],
+        })
+
     return jsonify(species)
+
 # list recent sightings
 @app.route("/api/sightings")
 def list_sightings():
