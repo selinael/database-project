@@ -200,16 +200,35 @@ def list_projects():
     return jsonify(projects)
 
 
-# Q1: high risk species with no control method
+# Q1: high risk species with no control method (real data)
 @app.route("/api/queries/1")
 def query_1():
-    # this will come from joins later, for now just hard coded
-    result = [
-        {
-            "invasive_scientific_name": "Carcinus maenas",
-            "common_name": "European green crab",
-        }
-    ]
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # pick high risk species that are not in species_control_method
+    cur.execute("""
+        SELECT
+            invasive_scientific_name,
+            common_name
+        FROM invasive_species
+        WHERE risk_level = 'high'
+          AND invasive_scientific_name NOT IN (
+              SELECT invasive_scientific_name
+              FROM species_control_method
+          );
+    """)
+
+    rows = cur.fetchall()
+    conn.close()
+
+    result = []
+    for row in rows:
+        result.append({
+            "invasive_scientific_name": row["invasive_scientific_name"],
+            "common_name": row["common_name"],
+        })
+
     return jsonify(result)
 # Q2: sightings count by region and risk level
 @app.route("/api/queries/2")
