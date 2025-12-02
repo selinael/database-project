@@ -175,3 +175,13 @@ INSERT INTO yearly_status (presence, population, year, invasive_scientific_name,
 (1, 12, 2024, 'Lythrum salicaria', 1),
 (0, 0, 2022, 'Fallopia japonica', 1),  
 (1, 1, 2024, 'Phragmites australis', 3);
+
+
+-- METHOD_PROJECT (which control methods are used in each project)
+
+INSERT INTO method_project (project_id, method_name) VALUES
+(1, 'Manual Removal'),
+(1, 'Herbicide Spray'),
+(2, 'Trapping Program'),
+(3, 'Manual Removal'),
+(4, 'Herbicide Spray');
