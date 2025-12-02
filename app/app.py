@@ -264,24 +264,38 @@ def query_2():
 
     return jsonify(data)
 
-# Q3: projects that use 'Manual Removal' as a control method
+# Q3: projects that use 'Manual Removal' as a control method (real data)
 @app.route("/api/queries/3")
 def query_3():
-    # later this will join eradication_project and method_project tables
-    data = [
-        {
-            "project_id": 1,
-            "name_of_project": "Operation Shoreline",
-            "status": "active",
-            "method_name": "Manual Removal",
-        },
-        {
-            "project_id": 3,
-            "name_of_project": "Harbour Pilot Study",
-            "status": "completed",
-            "method_name": "Manual Removal",
-        },
-    ]
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # find projects that are linked to the Manual Removal method
+    cur.execute("""
+        SELECT
+            p.project_id,
+            p.name_of_project,
+            p.status,
+            mp.method_name
+        FROM eradication_project AS p
+        JOIN method_project AS mp
+            ON p.project_id = mp.project_id
+        WHERE mp.method_name = 'Manual Removal'
+        ORDER BY p.project_id;
+    """)
+
+    rows = cur.fetchall()
+    conn.close()
+
+    data = []
+    for row in rows:
+        data.append({
+            "project_id": row["project_id"],
+            "name_of_project": row["name_of_project"],
+            "status": row["status"],
+            "method_name": row["method_name"],
+        })
+
     return jsonify(data)
 
 # Q4: regions with sightings but no active projects
