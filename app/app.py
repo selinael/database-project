@@ -67,32 +67,39 @@ def list_invasive_species():
 
     return jsonify(species)
 
-# list recent sightings
+# list recent sightings (now loaded from sqlite)
 @app.route("/api/sightings")
 def list_sightings():
-    # hard coded data for now, will come from the database later
-    sightings = [
-        {
-            "sighting_id": 1,
-            "observed_date": "2024-09-10",
-            "count_estimate": 20,
-            "photo_url": None,
-            "invasive_scientific_name": "Carcinus maenas",
-            "region_id": 1,
-            "reporter_id": 1,
-        },
-        {
-            "sighting_id": 2,
-            "observed_date": "2024-09-12",
-            "count_estimate": 10,
-            "photo_url": None,
-            "invasive_scientific_name": "Codium fragile",
-            "region_id": 2,
-            "reporter_id": 2,
-        },
-    ]
-    return jsonify(sightings)
+    conn = get_db_connection()
+    cur = conn.cursor()
 
+    cur.execute("""
+        SELECT
+            sighting_id,
+            observed_date,
+            count_estimate,
+            photo_url,
+            invasive_scientific_name,
+            region_id
+        FROM sighting
+        ORDER BY observed_date DESC, sighting_id DESC
+    """)
+
+    rows = cur.fetchall()
+    conn.close()
+
+    sightings = []
+    for row in rows:
+        sightings.append({
+            "sighting_id": row["sighting_id"],
+            "observed_date": row["observed_date"],
+            "count_estimate": row["count_estimate"],
+            "photo_url": row["photo_url"],
+            "invasive_scientific_name": row["invasive_scientific_name"],
+            "region_id": row["region_id"],
+        })
+
+    return jsonify(sightings)
 # create a new sighting (dummy implementation for now)
 @app.route("/api/sightings", methods=["POST"])
 def create_sighting():
