@@ -19,8 +19,8 @@ INSERT INTO invasive_species (invasive_scientific_name, common_name, kingdom, ri
 ('Ciona intestinalis', 'Vase Tunicate', 'Animalia', 'high', 4.0, '2008-09-14'),
 ('Carcinus maenas', 'European Green Crab', 'Animalia', 'high', 5.2, '2007-07-20'),
 ('Phragmites australis', 'Common Reed', 'Plantae', 'medium', 2.0, '2013-05-05'),
-('Lythrum salicaria', 'Purple Loosestrife', 'Plantae', 'low', 0.5, '2011-04-22');
-
+('Lythrum salicaria', 'Purple Loosestrife', 'Plantae', 'low', 0.5, '2011-04-22'),
+('Didemnum vexillum', 'Sea Vomit', 'Animalia', 'high', 6.0, '2024-05-01');
 
 
 -- NATIVE_SPECIES
