@@ -1,7 +1,8 @@
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request , render_template
 import sqlite3
 from pathlib import Path
+from datetime import date
 app = Flask(__name__)
 # path to the sqlite database file
 APP_DIR = Path(__file__).resolve().parent          # .../database-project/app
