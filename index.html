@@ -580,6 +580,22 @@
             container.innerHTML = html;
         }
 
+        // load dropdown options for the form
+        async function loadFormSelects() {
+            // get all species for dropdown
+            const speciesData = await fetchAPI('/api/invasive-species');
+            const speciesSelect = document.getElementById('species-select');
+            speciesSelect.innerHTML = '<option value="">-- Select a species --</option>';
+
+            if (speciesData) {
+                speciesData.forEach(s => {
+                    const option = document.createElement('option');
+                    option.value = s.invasive_scientific_name;
+                    option.textContent = s.common_name + ' (' + s.invasive_scientific_name + ')';
+                    speciesSelect.appendChild(option);
+                });
+            }
+
 
 
   </body>
