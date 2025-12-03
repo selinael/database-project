@@ -4,15 +4,20 @@ import sqlite3
 from pathlib import Path
 from datetime import date
 app = Flask(__name__)
+
+@app.route('/dashboard')
+def dashboard():
+    return render_template('index.html')
 # path to the sqlite database file
 APP_DIR = Path(__file__).resolve().parent          # .../database-project/app
 PROJECT_ROOT = APP_DIR.parent                      # .../database-project
-DB_PATH = PROJECT_ROOT / "sql" / "database.db"     # .../database-project/sql/database.db
+DB_PATH = APP_DIR / "database.db"     # .../database-project/sql/database.db
 
 def get_db_connection():
     """simple helper to open a sqlite connection"""
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row  # so we can access columns by name
+    conn.execute("PRAGMA foreign_keys = ON;")  # enforce FK constraints
     return conn
 
 # homepage: basic stats for the dashboard
@@ -190,6 +195,68 @@ def create_sighting():
         "message": "sighting created",
         "sighting": new_sighting,
     }), 201
+# Update a sighting (UPDATE)
+@app.route("/api/sightings/<int:sighting_id>", methods=["PUT"])
+def update_sighting(sighting_id):
+    data = request.get_json()
+    if data is None:
+        return jsonify({"error": "request body must be json"}), 400
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # Build update query based on what fields are provided
+    updates = []
+    values = []
+
+    if "count_estimate" in data:
+        updates.append("count_estimate = ?")
+        values.append(data["count_estimate"])
+
+    if "observed_date" in data:
+        updates.append("observed_date = ?")
+        values.append(data["observed_date"])
+
+    if "photo_url" in data:
+        updates.append("photo_url = ?")
+        values.append(data["photo_url"])
+
+    if not updates:
+        return jsonify({"error": "no fields to update"}), 400
+
+    # Add the sighting_id to values for WHERE clause
+    values.append(sighting_id)
+    query = f"UPDATE sighting SET {', '.join(updates)} WHERE sighting_id = ?"
+
+    try:
+        cur.execute(query, values)
+        conn.commit()
+        if cur.rowcount == 0:
+            conn.close()
+            return jsonify({"error": "sighting not found"}), 404
+        conn.close()
+        return jsonify({"message": "sighting updated", "sighting_id": sighting_id}), 200
+    except sqlite3.IntegrityError as e:
+        conn.close()
+        return jsonify({"error": str(e)}), 400
+
+# Delete a sighting (DELETE)
+@app.route("/api/sightings/<int:sighting_id>", methods=["DELETE"])
+def delete_sighting(sighting_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("DELETE FROM sighting WHERE sighting_id = ?", (sighting_id,))
+        conn.commit()
+        if cur.rowcount == 0:
+            conn.close()
+            return jsonify({"error": "sighting not found"}), 404
+        conn.close()
+        return jsonify({"message": "sighting deleted", "sighting_id": sighting_id}), 200
+    except sqlite3.IntegrityError:
+        conn.close()
+        return jsonify({"error": "cannot delete due to foreign key constraint"}), 400
+    
 # list eradication projects (now from sqlite)
 @app.route("/api/projects")
 def list_projects():
@@ -232,6 +299,70 @@ def list_projects():
 
     return jsonify(projects)
 
+
+# Update a project (UPDATE)
+@app.route("/api/projects/<int:project_id>", methods=["PUT"])
+def update_project(project_id):
+    data = request.get_json()
+    if data is None:
+        return jsonify({"error": "request body must be json"}), 400
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    updates = []
+    values = []
+
+    if "status" in data:
+        updates.append("status = ?")
+        values.append(data["status"])
+    if "budget_spent" in data:
+        updates.append("budget_spent = ?")
+        values.append(data["budget_spent"])
+    if "notes" in data:
+        updates.append("notes = ?")
+        values.append(data["notes"])
+
+    if not updates:
+        return jsonify({"error": "no fields to update"}), 400
+
+    values.append(project_id)
+    query = f"UPDATE eradication_project SET {', '.join(updates)} WHERE project_id = ?"
+
+    try:
+        cur.execute(query, values)
+        conn.commit()
+        if cur.rowcount == 0:
+            conn.close()
+            return jsonify({"error": "project not found"}), 404
+        conn.close()
+        return jsonify({"message": "project updated", "project_id": project_id}), 200
+    except sqlite3.IntegrityError as e:
+        conn.close()
+        return jsonify({"error": str(e)}), 400
+
+# Delete a project (DELETE)
+@app.route("/api/projects/<int:project_id>", methods=["DELETE"])
+def delete_project(project_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        # First delete junction table entries to avoid FK constraint issues
+        cur.execute("DELETE FROM method_project WHERE project_id = ?", (project_id,))
+        cur.execute("DELETE FROM project_region WHERE project_id = ?", (project_id,))
+        cur.execute("DELETE FROM species_project WHERE project_id = ?", (project_id,))
+
+        # Then delete the project itself
+        cur.execute("DELETE FROM eradication_project WHERE project_id = ?", (project_id,))
+        conn.commit()
+        if cur.rowcount == 0:
+            conn.close()
+            return jsonify({"error": "project not found"}), 404
+        conn.close()
+        return jsonify({"message": "project deleted", "project_id": project_id}), 200
+    except sqlite3.IntegrityError as e:
+        conn.close()
+        return jsonify({"error": str(e)}), 400
 
 # Q1: high risk species with no control method (real data)
 @app.route("/api/queries/1")
@@ -400,13 +531,13 @@ def query_5():
 # Q6: population trend (sightings count by year) for one invasive species (real data)
 @app.route("/api/queries/6")
 def query_6():
-    # get species from query string, use default if not given
+    # Get species from query string, use default if not given
     species_name = request.args.get("species", "Carcinus maenas")
 
     conn = get_db_connection()
     cur = conn.cursor()
 
-    # group sightings by year for the selected species
+    # Group sightings by year for the selected species
     cur.execute("""
         SELECT
             strftime('%Y', observed_date) AS year,
@@ -431,5 +562,7 @@ def query_6():
         "invasive_scientific_name": species_name,
         "trend": trend,
     })
+
+
 if __name__ == "__main__":
     app.run(debug=True)
