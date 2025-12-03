@@ -663,6 +663,21 @@
                 return;
             }
 
+            // send update to api
+            const response = await fetch(`/api/sightings/${sightingId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ count_estimate: count }),
+            });
+
+            if (response.ok) {
+                showAlert('Sighting updated!', 'success');
+                loadSightings(); // reload table
+            } else {
+                showAlert('Failed to update sighting', 'error');
+            }
+        }
+
 
 
 
