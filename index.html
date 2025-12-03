@@ -490,6 +490,33 @@
             }
         }
 
+        // load all species from database
+        async function loadSpecies() {
+            const container = document.getElementById('species-container');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            const data = await fetchAPI('/api/invasive-species');
+
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p class="empty-state">No species data available</p>';
+                return;
+            }
+
+            // build table html
+            let html = '<table><thead><tr><th>Scientific Name</th><th>Common Name</th><th>Kingdom</th><th>Risk Level</th><th>Spread Rate</th><th>First Record (NL)</th></tr></thead><tbody>';
+            data.forEach(s => {
+                html += `<tr>
+                    <td><strong>${s.invasive_scientific_name}</strong></td>
+                    <td>${s.common_name || '-'}</td>
+                    <td>${s.kingdom || '-'}</td>
+                    <td><span class="badge badge-${s.risk_level}">${s.risk_level}</span></td>
+                    <td>${s.spread_rate || '-'}</td>
+                    <td>${s.first_record_in_nl || '-'}</td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
 
 
   </body>
