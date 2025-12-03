@@ -350,6 +350,50 @@
             <div id="query-results"></div>
         </div>
 
+        <!-- REPORT SIGHTING TAB -->
+        <div id="add-sighting" class="tab-content">
+            <h2>Report a New Sighting</h2>
+            <p>Submit a new invasive species sighting</p>
+
+            <!-- Form for adding new sighting -->
+            <form id="sighting-form" style="max-width: 600px;">
+                <label for="species-select">
+                    Invasive Species *
+                    <select id="species-select" required>
+                        <option value="">-- Select a species --</option>
+                    </select>
+                </label>
+
+                <label for="region-select">
+                    Region *
+                    <select id="region-select" required>
+                        <option value="">-- Select a region --</option>
+                    </select>
+                </label>
+
+                <!-- Two fields side by side -->
+                <div class="form-row">
+                    <label for="count-input">
+                        Count Estimate *
+                        <input type="number" id="count-input" min="0" required>
+                    </label>
+
+                    <label for="date-input">
+                        Observed Date *
+                        <input type="date" id="date-input" required>
+                    </label>
+                </div>
+
+                <label for="photo-input">
+                    Photo URL
+                    <input type="text" id="photo-input" placeholder="https://example.com/photo.jpg">
+                </label>
+
+                <button type="submit">Submit Sighting</button>
+            </form>
+        </div>
+    </main>
+
 
 
   </body>
