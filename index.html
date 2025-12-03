@@ -561,6 +561,25 @@
                 return;
             }
 
+            // build projects table
+            let html = '<table><thead><tr><th>Project Name</th><th>Objective</th><th>Status</th><th>Start Date</th><th>Budget (Planned / Spent)</th><th>Actions</th></tr></thead><tbody>';
+            data.forEach(p => {
+                html += `<tr>
+                    <td><strong>${p.name_of_project}</strong></td>
+                    <td>${p.objective || '-'}</td>
+                    <td><span class="badge badge-${p.status === 'active' ? 'high' : 'low'}">${p.status}</span></td>
+                    <td>${p.start_date}</td>
+                    <td>$${(p.budget_planned || 0).toLocaleString()} / $${(p.budget_spent || 0).toLocaleString()}</td>
+                    <td>
+                        <button onclick="editProject(${p.project_id}, '${p.status}')">Edit</button>
+                        <button onclick="deleteProject(${p.project_id})" class="secondary">Delete</button>
+                    </td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
 
 
   </body>
