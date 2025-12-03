@@ -596,6 +596,29 @@
                 });
             }
 
+            // hardcoded regions 
+            const regions = [
+                { id: 1, name: 'Avalon Peninsula' },
+                { id: 2, name: 'Burin Peninsula' },
+                { id: 3, name: 'Central Newfoundland' },
+                { id: 4, name: 'Northern Peninsula' },
+                { id: 5, name: "St. John's" },
+                { id: 6, name: 'Gros Morne' }
+            ];
+
+            const regionSelect = document.getElementById('region-select');
+            regionSelect.innerHTML = '<option value="">-- Select a region --</option>';
+            regions.forEach(r => {
+                const option = document.createElement('option');
+                option.value = r.id;
+                option.textContent = r.name;
+                regionSelect.appendChild(option);
+            });
+
+            // set today as default date
+            document.getElementById('date-input').value = new Date().toISOString().split('T')[0];
+        }
+
 
 
   </body>
