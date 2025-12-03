@@ -652,6 +652,17 @@
             }
         });
 
+        // edit sighting count
+        async function editSighting(sightingId, currentCount) {
+            const newCount = prompt("Update count estimate:", currentCount);
+            if (newCount === null) return; // user cancelled
+
+            const count = parseInt(newCount);
+            if (isNaN(count) || count < 0) {
+                showAlert('Invalid count value', 'error');
+                return;
+            }
+
 
 
 
