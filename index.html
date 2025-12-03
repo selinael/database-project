@@ -481,6 +481,15 @@
                 <div class="stat-card"><h3>Low Risk</h3><div class="number">${data.low_risk}</div></div>
             `;
 
+            // load recent sightings (only first 10)
+            const sightingData = await fetchAPI('/api/sightings');
+            if (sightingData && sightingData.length > 0) {
+                document.getElementById('recent-sightings').innerHTML = buildSightingsTable(sightingData.slice(0, 10));
+            } else {
+                document.getElementById('recent-sightings').innerHTML = '<p class="empty-state">No sightings recorded yet</p>';
+            }
+        }
+
 
 
   </body>
