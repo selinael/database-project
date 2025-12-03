@@ -465,6 +465,22 @@
             else if (tabName === 'queries') document.getElementById('query-results').innerHTML = '';
         }
 
+        // load dashboard stats and recent sightings
+        async function loadDashboard() {
+            const container = document.getElementById('stats-container');
+            const data = await fetchAPI('/');
+            if (!data) return;
+
+            // build html for stat cards
+            container.innerHTML = `
+                <div class="stat-card"><h3>Total Species</h3><div class="number">${data.total_species}</div></div>
+                <div class="stat-card"><h3>Total Sightings</h3><div class="number">${data.total_sightings}</div></div>
+                <div class="stat-card"><h3>Active Projects</h3><div class="number">${data.active_projects}</div></div>
+                <div class="stat-card"><h3>High Risk</h3><div class="number">${data.high_risk}</div></div>
+                <div class="stat-card"><h3>Medium Risk</h3><div class="number">${data.medium_risk}</div></div>
+                <div class="stat-card"><h3>Low Risk</h3><div class="number">${data.low_risk}</div></div>
+            `;
+
 
 
   </body>
