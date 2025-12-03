@@ -619,6 +619,30 @@
             document.getElementById('date-input').value = new Date().toISOString().split('T')[0];
         }
 
+        // form submission handler
+        document.getElementById('sighting-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // collect form data
+            const formData = {
+                invasive_scientific_name: document.getElementById('species-select').value,
+                region_id: parseInt(document.getElementById('region-select').value),
+                count_estimate: parseInt(document.getElementById('count-input').value),
+                observed_date: document.getElementById('date-input').value,
+                photo_url: document.getElementById('photo-input').value || null,
+            };
+
+            // validate required fields
+            if (!formData.invasive_scientific_name || !formData.region_id || formData.count_estimate === null) {
+                showAlert('Please fill in all required fields', 'error');
+                return;
+            }
+            if (formData.count_estimate < 0) {
+                showAlert('Count must be 0 or higher', 'error');
+                return;
+            }
+
+
 
 
   </body>
