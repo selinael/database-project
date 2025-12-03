@@ -729,6 +729,53 @@
             }
         }
 
+        // run query and show results
+        async function runQuery(queryNum) {
+    const resultsDiv = document.getElementById('query-results');
+    resultsDiv.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+    let data = await fetchAPI(`/api/queries/${queryNum}`);
+
+   
+    if (queryNum === 6 && data && Array.isArray(data.trend)) {
+        var speciesName = data.invasive_scientific_name;
+        data = data.trend;
+    }
+
+    if (!data || data.length === 0) {
+        resultsDiv.innerHTML = '<p class="empty-state">No results found for this query</p>';
+        return;
+    }
+
+    let title = `Query ${queryNum} Results`;
+    if (queryNum === 6 && speciesName) {
+        title += ` for ${speciesName}`;
+    }
+
+    let html = `<h3>${title}</h3><table><thead><tr>`;
+
+    if (queryNum === 1) html += '<th>Scientific Name</th><th>Common Name</th>';
+    else if (queryNum === 2) html += '<th>Region</th><th>Risk Level</th><th>Count</th>';
+    else if (queryNum === 3) html += '<th>Project ID</th><th>Project Name</th><th>Status</th><th>Method</th>';
+    else if (queryNum === 4) html += '<th>Region ID</th><th>Region Name</th>';
+    else if (queryNum === 5) html += '<th>Native Scientific Name</th><th>Common Name</th><th>Threat Count</th>';
+    else if (queryNum === 6) html += '<th>Year</th><th>Total Sightings</th>';
+
+    html += '</tr></thead><tbody>';
+
+    data.forEach(row => {
+        html += '<tr>';
+        if (queryNum === 1) html += `<td>${row.invasive_scientific_name}</td><td>${row.common_name}</td>`;
+        else if (queryNum === 2) html += `<td>${row.region}</td><td><span class="badge badge-${row.risk_level}">${row.risk_level}</span></td><td>${row.count}</td>`;
+        else if (queryNum === 3) html += `<td>${row.project_id}</td><td>${row.name_of_project}</td><td>${row.status}</td><td>${row.method_name}</td>`;
+        else if (queryNum === 4) html += `<td>${row.region_id}</td><td>${row.region_name}</td>`;
+        else if (queryNum === 5) html += `<td>${row.native_scientific_name}</td><td>${row.native_common_name}</td><td>${row.threat_count}</td>`;
+        else if (queryNum === 6) html += `<td>${row.year}</td><td>${row.total_sightings}</td>`;
+        html += '</tr>';
+    });
+
+    html += '</tbody></table>';
+    resultsDiv.innerHTML = html;
+}
 
 
 
