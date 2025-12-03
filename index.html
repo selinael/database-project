@@ -716,6 +716,19 @@
             }
         }
 
+        // delete project
+        async function deleteProject(projectId) {
+            if (!confirm("Delete this project?")) return;
+
+            const response = await fetch(`/api/projects/${projectId}`, { method: 'DELETE' });
+            if (response.ok) {
+                showAlert('Project deleted!', 'success');
+                loadProjects(); // reload table
+            } else {
+                showAlert('Failed to delete project', 'error');
+            }
+        }
+
 
 
 
