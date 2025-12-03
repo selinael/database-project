@@ -678,6 +678,19 @@
             }
         }
 
+        // delete sighting
+        async function deleteSighting(sightingId) {
+            if (!confirm("Delete this sighting?")) return; // ask for confirmation
+
+            const response = await fetch(`/api/sightings/${sightingId}`, { method: 'DELETE' });
+            if (response.ok) {
+                showAlert('Sighting deleted!', 'success');
+                loadSightings(); // reload table
+            } else {
+                showAlert('Failed to delete sighting', 'error');
+            }
+        }
+
 
 
 
