@@ -691,6 +691,31 @@
             }
         }
 
+        // edit project status
+        async function editProject(projectId, currentStatus) {
+            const newStatus = prompt("Update status (planning/active/completed/on-hold):", currentStatus);
+            if (!newStatus) return;
+
+            // validate status
+            if (!['planning','active','completed','on-hold'].includes(newStatus)) {
+                showAlert('Invalid status value!', 'error');
+                return;
+            }
+
+            const response = await fetch(`/api/projects/${projectId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus }),
+            });
+
+            if (response.ok) {
+                showAlert('Project updated!', 'success');
+                loadProjects(); // reload table
+            } else {
+                showAlert('Failed to update project', 'error');
+            }
+        }
+
 
 
 
