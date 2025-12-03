@@ -642,6 +642,16 @@
                 return;
             }
 
+            // submit to api
+            const result = await postAPI('/api/sightings', formData);
+            if (result && result.sighting) {
+                showAlert('Sighting submitted successfully!', 'success');
+                // reset form
+                document.getElementById('sighting-form').reset();
+                document.getElementById('date-input').value = new Date().toISOString().split('T')[0];
+            }
+        });
+
 
 
 
