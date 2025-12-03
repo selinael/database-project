@@ -24,7 +24,229 @@
         header h1 {
             margin-bottom: 0.5rem;
         }
-              
+        header p {
+            opacity: 0.9;
+            margin: 0;
+        }
+
+        /* main container to keep everything centered */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        /* tab navigation styling */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 2px solid var(--pico-muted-border-color);
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            padding: 0;
+        }
+
+        .tab-btn {
+            padding: 0.75rem 1.25rem;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+            color: var(--pico-color);
+        }
+
+        .tab-btn:hover {
+            background: var(--pico-background-color);
+            border-bottom-color: var(--pico-muted-border-color);
+        }
+
+        /* active tab gets purple underline */
+        .tab-btn.active {
+            border-bottom-color: #667eea;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        /* hide all tabs by default */
+        .tab-content {
+            display: none;
+        }
+
+        /* only show the active tab */
+        .tab-content.active {
+            display: block;
+        }
+
+        /* dashboard stats cards grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        /* individual stat card with purple gradient */
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 0.875rem;
+            opacity: 0.9;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        /* query cards grid layout */
+        .query-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        /* individual query card */
+        .query-card {
+            border: 2px solid var(--pico-muted-border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        /* hover effect on query cards */
+        .query-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .query-card h4 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .query-card p {
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            color: var(--pico-muted-color);
+        }
+
+        .query-card button {
+            width: 100%;
+            margin: 0;
+        }
+
+        /* badge styling for risk levels */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* high risk = red */
+        .badge-high {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* medium risk = yellow */
+        .badge-medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        /* low risk = green */
+        .badge-low {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        /* smaller buttons in tables */
+        table button {
+            padding: 0.4rem 0.8rem;
+            margin: 0.2rem;
+            font-size: 0.85rem;
+        }
+
+        /* alert messages */
+        .alert {
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* loading spinner animation */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--pico-muted-border-color);
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        /* empty state message */
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--pico-muted-color);
+        }
+
+        /* two column form layout */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        /* mobile responsive - stack form fields */
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }              
     </style>
 
   </head>
