@@ -517,6 +517,50 @@
             container.innerHTML = html;
         }
 
+        // helper function to build sightings table (reused in dashboard and sightings tab)
+        function buildSightingsTable(sightings) {
+            let html = '<table><thead><tr><th>Date</th><th>Species</th><th>Region</th><th>Count</th><th>Photo</th><th>Actions</th></tr></thead><tbody>';
+            sightings.forEach(s => {
+                html += `<tr>
+                    <td>${s.observed_date}</td>
+                    <td>${s.invasive_scientific_name}</td>
+                    <td>Region ${s.region_id}</td>
+                    <td>${s.count_estimate}</td>
+                    <td>${s.photo_url ? '<a href="' + s.photo_url + '" target="_blank">View</a>' : '-'}</td>
+                    <td>
+                        <button onclick="editSighting(${s.sighting_id}, ${s.count_estimate})">Edit</button>
+                        <button onclick="deleteSighting(${s.sighting_id})" class="secondary">Delete</button>
+                    </td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+            return html;
+        }
+
+        // load all sightings
+        async function loadSightings() {
+            const container = document.getElementById('sightings-container');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            const data = await fetchAPI('/api/sightings');
+
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p class="empty-state">No sightings recorded yet</p>';
+                return;
+            }
+            container.innerHTML = buildSightingsTable(data);
+        }
+
+        // load all projects
+        async function loadProjects() {
+            const container = document.getElementById('projects-container');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            const data = await fetchAPI('/api/projects');
+
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p class="empty-state">No projects available</p>';
+                return;
+            }
+
 
 
   </body>
