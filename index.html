@@ -395,5 +395,76 @@
     </main>
 
 
+    <script>
+        // base url for api calls (empty string means same domain)
+        const API_BASE = '';
+
+        // helper function to fetch data from api
+        async function fetchAPI(endpoint) {
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`);
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                console.error('Fetch error:', error);
+                showAlert('Error loading data', 'error');
+                return null;
+            }
+        }
+
+        // helper function to post data to api
+        async function postAPI(endpoint, data) {
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                });
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                console.error('Post error:', error);
+                showAlert('Error submitting data', 'error');
+                return null;
+            }
+        }
+
+        // show alert message at top of page
+        function showAlert(message, type = 'info') {
+            const alertEl = document.getElementById('alert');
+            alertEl.textContent = message;
+            alertEl.className = `alert alert-${type} show`;
+            // hide after 5 seconds
+            setTimeout(() => alertEl.classList.remove('show'), 5000);
+        }
+
+        // tab switching logic
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // remove active class from all tabs
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+
+                // add active class to clicked tab
+                btn.classList.add('active');
+                const tabName = btn.getAttribute('data-tab');
+                document.getElementById(tabName).classList.add('active');
+
+                // load content for that tab
+                loadTabContent(tabName);
+            });
+        });
+
+        // decide what to load based on which tab is clicked
+        function loadTabContent(tabName) {
+            if (tabName === 'dashboard') loadDashboard();
+            else if (tabName === 'species') loadSpecies();
+            else if (tabName === 'sightings') loadSightings();
+            else if (tabName === 'projects') loadProjects();
+            else if (tabName === 'add-sighting') loadFormSelects();
+            else if (tabName === 'queries') document.getElementById('query-results').innerHTML = '';
+        }
+
+
 
   </body>
