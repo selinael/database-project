@@ -304,6 +304,52 @@
             <div id="projects-container"></div>
         </div>
 
+        <!-- QUERIES TAB -->
+        <div id="queries" class="tab-content">
+            <h2>Database Queries</h2>
+            <p>Run predefined queries to analyze invasive species data</p>
+
+            <!-- query cards -->
+            <div class="query-grid">
+                <div class="query-card">
+                    <h4>Query 1</h4>
+                    <p>High risk species with no control method assigned</p>
+                    <button onclick="runQuery(1)">Run Query</button>
+                </div>
+
+                <div class="query-card">
+                    <h4>Query 2</h4>
+                    <p>Sightings count by region and risk level</p>
+                    <button onclick="runQuery(2)">Run Query</button>
+                </div>
+
+                <div class="query-card">
+                    <h4>Query 3</h4>
+                    <p>Projects using Manual Removal control method</p>
+                    <button onclick="runQuery(3)">Run Query</button>
+                </div>
+
+                <div class="query-card">
+                    <h4>Query 4</h4>
+                    <p>Regions with sightings but no active projects</p>
+                    <button onclick="runQuery(4)">Run Query</button>
+                </div>
+
+                <div class="query-card">
+                    <h4>Query 5</h4>
+                    <p>Native species impacted by high risk invasives</p>
+                    <button onclick="runQuery(5)">Run Query</button>
+                </div>
+
+                <div class="query-card">
+                    <h4>Query 6</h4>
+                    <p>Population trend for European Green Crab by year</p>
+                    <button onclick="runQuery(6)">Run Query</button>
+                </div>
+            </div>
+            <div id="query-results"></div>
+        </div>
+
 
 
   </body>
