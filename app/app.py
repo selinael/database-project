@@ -1,17 +1,15 @@
-
-from flask import Flask, jsonify, request , render_template
+from flask import Flask, jsonify, request, render_template
 import sqlite3
 from pathlib import Path
 from datetime import date
+
 app = Flask(__name__)
 
-@app.route('/dashboard')
-def dashboard():
-    return render_template('index.html')
-# path to the sqlite database file
+# ----------------- DB CONFIG -----------------
 APP_DIR = Path(__file__).resolve().parent          # .../database-project/app
 PROJECT_ROOT = APP_DIR.parent                      # .../database-project
-DB_PATH = APP_DIR / "database.db"     # .../database-project/sql/database.db
+DB_PATH = PROJECT_ROOT / "sql" / "database.db"     # use the DB built by init_db.py
+
 
 def get_db_connection():
     """simple helper to open a sqlite connection"""
@@ -20,10 +18,19 @@ def get_db_connection():
     conn.execute("PRAGMA foreign_keys = ON;")  # enforce FK constraints
     return conn
 
-# homepage: basic stats for the dashboard
-# homepage: basic stats for the dashboard (now from database)
+
+# ----------------- UI ROUTES -----------------
+
+# Root + /dashboard both render the HTML UI
 @app.route("/")
-def index():
+@app.route("/dashboard")
+def dashboard():
+    return render_template("index.html")
+
+
+# Stats API for dashboard cards
+@app.route("/api/stats")
+def stats():
     conn = get_db_connection()
     cur = conn.cursor()
 
@@ -51,20 +58,23 @@ def index():
 
     conn.close()
 
-    stats = {
+    return jsonify({
         "total_species": total_species,
         "total_sightings": total_sightings,
         "active_projects": active_projects,
         "high_risk": high_risk,
         "medium_risk": medium_risk,
         "low_risk": low_risk,
-    }
+    })
 
-    return jsonify(stats)
+
 # simple route to check server
 @app.route("/test")
 def test():
     return "test route is working"
+
+
+# ----------------- API: INVASIVE SPECIES -----------------
 
 # list of invasive species and basic details (now from sqlite)
 @app.route("/api/invasive-species")
@@ -101,20 +111,18 @@ def list_invasive_species():
 
     return jsonify(species)
 
+
+# ----------------- API: SIGHTINGS -----------------
+
 # list recent sightings (now loaded from sqlite)
 @app.route("/api/sightings")
 def list_sightings():
     conn = get_db_connection()
     cur = conn.cursor()
 
+    # Grab all columns that exist in the table
     cur.execute("""
-        SELECT
-            sighting_id,
-            observed_date,
-            count_estimate,
-            photo_url,
-            invasive_scientific_name,
-            region_id
+        SELECT *
         FROM sighting
         ORDER BY observed_date DESC, sighting_id DESC
     """)
@@ -124,16 +132,25 @@ def list_sightings():
 
     sightings = []
     for row in rows:
+        # turn sqlite Row into a normal dict
+        r = dict(row)
+
+        # normalise keys expected by the frontend
+        # (if photo_url column doesn't exist, we still provide it as None)
+        if "photo_url" not in r:
+            r["photo_url"] = None
+
         sightings.append({
-            "sighting_id": row["sighting_id"],
-            "observed_date": row["observed_date"],
-            "count_estimate": row["count_estimate"],
-            "photo_url": row["photo_url"],
-            "invasive_scientific_name": row["invasive_scientific_name"],
-            "region_id": row["region_id"],
+            "sighting_id": r.get("sighting_id"),
+            "observed_date": r.get("observed_date"),
+            "count_estimate": r.get("count_estimate"),
+            "photo_url": r.get("photo_url"),
+            "invasive_scientific_name": r.get("invasive_scientific_name"),
+            "region_id": r.get("region_id"),
         })
 
     return jsonify(sightings)
+
 # create a new sighting (real insert into SQLite)
 @app.route("/api/sightings", methods=["POST"])
 def create_sighting():
@@ -195,6 +212,8 @@ def create_sighting():
         "message": "sighting created",
         "sighting": new_sighting,
     }), 201
+
+
 # Update a sighting (UPDATE)
 @app.route("/api/sightings/<int:sighting_id>", methods=["PUT"])
 def update_sighting(sighting_id):
@@ -240,6 +259,7 @@ def update_sighting(sighting_id):
         conn.close()
         return jsonify({"error": str(e)}), 400
 
+
 # Delete a sighting (DELETE)
 @app.route("/api/sightings/<int:sighting_id>", methods=["DELETE"])
 def delete_sighting(sighting_id):
@@ -256,7 +276,10 @@ def delete_sighting(sighting_id):
     except sqlite3.IntegrityError:
         conn.close()
         return jsonify({"error": "cannot delete due to foreign key constraint"}), 400
-    
+
+
+# ----------------- API: PROJECTS -----------------
+
 # list eradication projects (now from sqlite)
 @app.route("/api/projects")
 def list_projects():
@@ -341,6 +364,7 @@ def update_project(project_id):
         conn.close()
         return jsonify({"error": str(e)}), 400
 
+
 # Delete a project (DELETE)
 @app.route("/api/projects/<int:project_id>", methods=["DELETE"])
 def delete_project(project_id):
@@ -363,6 +387,9 @@ def delete_project(project_id):
     except sqlite3.IntegrityError as e:
         conn.close()
         return jsonify({"error": str(e)}), 400
+
+
+# ----------------- API: QUERIES -----------------
 
 # Q1: high risk species with no control method (real data)
 @app.route("/api/queries/1")
@@ -394,6 +421,8 @@ def query_1():
         })
 
     return jsonify(result)
+
+
 # Q2: sightings count by region and risk level (real data)
 @app.route("/api/queries/2")
 def query_2():
@@ -427,6 +456,7 @@ def query_2():
         })
 
     return jsonify(data)
+
 
 # Q3: projects that use 'Manual Removal' as a control method (real data)
 @app.route("/api/queries/3")
@@ -462,6 +492,7 @@ def query_3():
 
     return jsonify(data)
 
+
 # Q4: regions with sightings but no active projects (real data)
 @app.route("/api/queries/4")
 def query_4():
@@ -494,6 +525,7 @@ def query_4():
         })
 
     return jsonify(data)
+
 
 # Q5: native species impacted by high risk invasives (real data)
 @app.route("/api/queries/5")
@@ -528,6 +560,8 @@ def query_5():
         })
 
     return jsonify(data)
+
+
 # Q6: population trend (sightings count by year) for one invasive species (real data)
 @app.route("/api/queries/6")
 def query_6():
@@ -564,5 +598,6 @@ def query_6():
     })
 
 
+# ----------------- MAIN -----------------
 if __name__ == "__main__":
     app.run(debug=True)
