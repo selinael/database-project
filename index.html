@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang ="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invasive Species Tracker - NL</title>
+
+    <!-- using pico.css framework so we dont have to write tons of css ourselves -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+
+    <style>
+      body {
+        padding: 0;
+        margin: 0;
+      }
+      header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 0;        
+      }
+
+        header h1 {
+            margin-bottom: 0.5rem;
+        }
+        header p {
+            opacity: 0.9;
+            margin: 0;
+        }
+
+        /* main container to keep everything centered */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        /* tab navigation styling */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 2px solid var(--pico-muted-border-color);
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            padding: 0;
+        }
+
+        .tab-btn {
+            padding: 0.75rem 1.25rem;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+            color: var(--pico-color);
+        }
+
+        .tab-btn:hover {
+            background: var(--pico-background-color);
+            border-bottom-color: var(--pico-muted-border-color);
+        }
+
+        /* active tab gets purple underline */
+        .tab-btn.active {
+            border-bottom-color: #667eea;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        /* hide all tabs by default */
+        .tab-content {
+            display: none;
+        }
+
+        /* only show the active tab */
+        .tab-content.active {
+            display: block;
+        }
+
+        /* dashboard stats cards grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        /* individual stat card with purple gradient */
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 0.875rem;
+            opacity: 0.9;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        /* query cards grid layout */
+        .query-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        /* individual query card */
+        .query-card {
+            border: 2px solid var(--pico-muted-border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        /* hover effect on query cards */
+        .query-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .query-card h4 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .query-card p {
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            color: var(--pico-muted-color);
+        }
+
+        .query-card button {
+            width: 100%;
+            margin: 0;
+        }
+
+        /* badge styling for risk levels */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* high risk = red */
+        .badge-high {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* medium risk = yellow */
+        .badge-medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        /* low risk = green */
+        .badge-low {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        /* smaller buttons in tables */
+        table button {
+            padding: 0.4rem 0.8rem;
+            margin: 0.2rem;
+            font-size: 0.85rem;
+        }
+
+        /* alert messages */
+        .alert {
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* loading spinner animation */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--pico-muted-border-color);
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        /* empty state message */
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--pico-muted-color);
+        }
+
+        /* two column form layout */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        /* mobile responsive - stack form fields */
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }              
+    </style>
+
+  </head>
+
+  <body>
+    <!-- header section -->
+    <header>
+        <h1>🌿 Invasive Species Tracker</h1>
+        <p>Newfoundland & Labrador - Invasive Species Management</p>
+    </header>
+
+    <main class="container">
+        <!-- tab buttons -->
+        <nav class="tabs">
+            <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+            <button class="tab-btn" data-tab="species">Species</button>
+            <button class="tab-btn" data-tab="sightings">Sightings</button>
+            <button class="tab-btn" data-tab="projects">Projects</button>
+            <button class="tab-btn" data-tab="queries">Queries</button>
+            <button class="tab-btn" data-tab="add-sighting">Report Sighting</button>
+        </nav>
+
+        <!-- alert box for success/error messages -->
+        <div id="alert" class="alert"></div>
+
+        <!-- DASHBOARD TAB -->
+        <div id="dashboard" class="tab-content active">
+            <h2>Dashboard Overview</h2>
+            <p>Quick stats about invasive species in NL</p>
+            <div class="stats-grid" id="stats-container">
+                <div class="loading"><div class="spinner"></div></div>
+            </div>
+            <h3>Recent Sightings</h3>
+            <div id="recent-sightings"></div>
+        </div>
+         
+        <!-- SPECIES TAB -->
+        <div id="species" class="tab-content">
+            <h2>Invasive Species List</h2>
+            <p>All tracked invasive species in the database</p>
+            <div id="species-container"></div>
+        </div>
+
+        <!-- SIGHTINGS TAB -->
+        <div id="sightings" class="tab-content">
+            <h2>Sighting Records</h2>
+            <p>All recorded sightings across regions</p>
+            <div id="sightings-container"></div>
+        </div>
+
+        <!-- PROJECTS TAB -->
+        <div id="projects" class="tab-content">
+            <h2>Eradication Projects</h2>
+            <p>Active and completed control projects</p>
+            <div id="projects-container"></div>
+        </div>
+
+        <!-- QUERIES TAB -->
+        <div id="queries" class="tab-content">
+            <h2>Database Queries</h2>
+            <p>Run predefined queries to analyze invasive species data</p>
+
+            <!-- query cards -->
+            <div class="query-grid">
+                <div class="query-card">
+                    <h4>Query 1</h4>
+                    <p>High risk species with no control method assigned</p>
+                    <button onclick="runQuery(1)">Run Query</button>
+                </div>
+
+                <div class="query-card">
+                    <h4>Query 2</h4>
+                    <p>Sightings count by region and risk level</p>
+                    <button onclick="runQuery(2)">Run Query</button>
+                </div>
+
+                <div class="query-card">
+                    <h4>Query 3</h4>
+                    <p>Projects using Manual Removal control method</p>
+                    <button onclick="runQuery(3)">Run Query</button>
+                </div>
+
+                <div class="query-card">
+                    <h4>Query 4</h4>
+                    <p>Regions with sightings but no active projects</p>
+                    <button onclick="runQuery(4)">Run Query</button>
+                </div>
+
+                <div class="query-card">
+                    <h4>Query 5</h4>
+                    <p>Native species impacted by high risk invasives</p>
+                    <button onclick="runQuery(5)">Run Query</button>
+                </div>
+
+                <div class="query-card">
+                    <h4>Query 6</h4>
+                    <p>Population trend for European Green Crab by year</p>
+                    <button onclick="runQuery(6)">Run Query</button>
+                </div>
+            </div>
+            <div id="query-results"></div>
+        </div>
+
+        <!-- REPORT SIGHTING TAB -->
+        <div id="add-sighting" class="tab-content">
+            <h2>Report a New Sighting</h2>
+            <p>Submit a new invasive species sighting</p>
+
+            <!-- Form for adding new sighting -->
+            <form id="sighting-form" style="max-width: 600px;">
+                <label for="species-select">
+                    Invasive Species *
+                    <select id="species-select" required>
+                        <option value="">-- Select a species --</option>
+                    </select>
+                </label>
+
+                <label for="region-select">
+                    Region *
+                    <select id="region-select" required>
+                        <option value="">-- Select a region --</option>
+                    </select>
+                </label>
+
+                <!-- Two fields side by side -->
+                <div class="form-row">
+                    <label for="count-input">
+                        Count Estimate *
+                        <input type="number" id="count-input" min="0" required>
+                    </label>
+
+                    <label for="date-input">
+                        Observed Date *
+                        <input type="date" id="date-input" required>
+                    </label>
+                </div>
+
+                <label for="photo-input">
+                    Photo URL
+                    <input type="text" id="photo-input" placeholder="https://example.com/photo.jpg">
+                </label>
+
+                <button type="submit">Submit Sighting</button>
+            </form>
+        </div>
+    </main>
+
+
+    <script>
+        // base url for api calls (empty string means same domain)
+        const API_BASE = '';
+
+        // helper function to fetch data from api
+        async function fetchAPI(endpoint) {
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`);
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                console.error('Fetch error:', error);
+                showAlert('Error loading data', 'error');
+                return null;
+            }
+        }
+
+        // helper function to post data to api
+        async function postAPI(endpoint, data) {
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                });
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                console.error('Post error:', error);
+                showAlert('Error submitting data', 'error');
+                return null;
+            }
+        }
+
+        // show alert message at top of page
+        function showAlert(message, type = 'info') {
+            const alertEl = document.getElementById('alert');
+            alertEl.textContent = message;
+            alertEl.className = `alert alert-${type} show`;
+            // hide after 5 seconds
+            setTimeout(() => alertEl.classList.remove('show'), 5000);
+        }
+
+        // tab switching logic
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // remove active class from all tabs
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+
+                // add active class to clicked tab
+                btn.classList.add('active');
+                const tabName = btn.getAttribute('data-tab');
+                document.getElementById(tabName).classList.add('active');
+
+                // load content for that tab
+                loadTabContent(tabName);
+            });
+        });
+
+        // decide what to load based on which tab is clicked
+        function loadTabContent(tabName) {
+            if (tabName === 'dashboard') loadDashboard();
+            else if (tabName === 'species') loadSpecies();
+            else if (tabName === 'sightings') loadSightings();
+            else if (tabName === 'projects') loadProjects();
+            else if (tabName === 'add-sighting') loadFormSelects();
+            else if (tabName === 'queries') document.getElementById('query-results').innerHTML = '';
+        }
+
+        // load dashboard stats and recent sightings
+        async function loadDashboard() {
+            const container = document.getElementById('stats-container');
+            const data = await fetchAPI('/');
+            if (!data) return;
+
+            // build html for stat cards
+            container.innerHTML = `
+                <div class="stat-card"><h3>Total Species</h3><div class="number">${data.total_species}</div></div>
+                <div class="stat-card"><h3>Total Sightings</h3><div class="number">${data.total_sightings}</div></div>
+                <div class="stat-card"><h3>Active Projects</h3><div class="number">${data.active_projects}</div></div>
+                <div class="stat-card"><h3>High Risk</h3><div class="number">${data.high_risk}</div></div>
+                <div class="stat-card"><h3>Medium Risk</h3><div class="number">${data.medium_risk}</div></div>
+                <div class="stat-card"><h3>Low Risk</h3><div class="number">${data.low_risk}</div></div>
+            `;
+
+            // load recent sightings (only first 10)
+            const sightingData = await fetchAPI('/api/sightings');
+            if (sightingData && sightingData.length > 0) {
+                document.getElementById('recent-sightings').innerHTML = buildSightingsTable(sightingData.slice(0, 10));
+            } else {
+                document.getElementById('recent-sightings').innerHTML = '<p class="empty-state">No sightings recorded yet</p>';
+            }
+        }
+
+        // load all species from database
+        async function loadSpecies() {
+            const container = document.getElementById('species-container');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            const data = await fetchAPI('/api/invasive-species');
+
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p class="empty-state">No species data available</p>';
+                return;
+            }
+
+            // build table html
+            let html = '<table><thead><tr><th>Scientific Name</th><th>Common Name</th><th>Kingdom</th><th>Risk Level</th><th>Spread Rate</th><th>First Record (NL)</th></tr></thead><tbody>';
+            data.forEach(s => {
+                html += `<tr>
+                    <td><strong>${s.invasive_scientific_name}</strong></td>
+                    <td>${s.common_name || '-'}</td>
+                    <td>${s.kingdom || '-'}</td>
+                    <td><span class="badge badge-${s.risk_level}">${s.risk_level}</span></td>
+                    <td>${s.spread_rate || '-'}</td>
+                    <td>${s.first_record_in_nl || '-'}</td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        // helper function to build sightings table (reused in dashboard and sightings tab)
+        function buildSightingsTable(sightings) {
+            let html = '<table><thead><tr><th>Date</th><th>Species</th><th>Region</th><th>Count</th><th>Photo</th><th>Actions</th></tr></thead><tbody>';
+            sightings.forEach(s => {
+                html += `<tr>
+                    <td>${s.observed_date}</td>
+                    <td>${s.invasive_scientific_name}</td>
+                    <td>Region ${s.region_id}</td>
+                    <td>${s.count_estimate}</td>
+                    <td>${s.photo_url ? '<a href="' + s.photo_url + '" target="_blank">View</a>' : '-'}</td>
+                    <td>
+                        <button onclick="editSighting(${s.sighting_id}, ${s.count_estimate})">Edit</button>
+                        <button onclick="deleteSighting(${s.sighting_id})" class="secondary">Delete</button>
+                    </td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+            return html;
+        }
+
+        // load all sightings
+        async function loadSightings() {
+            const container = document.getElementById('sightings-container');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            const data = await fetchAPI('/api/sightings');
+
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p class="empty-state">No sightings recorded yet</p>';
+                return;
+            }
+            container.innerHTML = buildSightingsTable(data);
+        }
+
+        // load all projects
+        async function loadProjects() {
+            const container = document.getElementById('projects-container');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            const data = await fetchAPI('/api/projects');
+
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p class="empty-state">No projects available</p>';
+                return;
+            }
+
+            // build projects table
+            let html = '<table><thead><tr><th>Project Name</th><th>Objective</th><th>Status</th><th>Start Date</th><th>Budget (Planned / Spent)</th><th>Actions</th></tr></thead><tbody>';
+            data.forEach(p => {
+                html += `<tr>
+                    <td><strong>${p.name_of_project}</strong></td>
+                    <td>${p.objective || '-'}</td>
+                    <td><span class="badge badge-${p.status === 'active' ? 'high' : 'low'}">${p.status}</span></td>
+                    <td>${p.start_date}</td>
+                    <td>$${(p.budget_planned || 0).toLocaleString()} / $${(p.budget_spent || 0).toLocaleString()}</td>
+                    <td>
+                        <button onclick="editProject(${p.project_id}, '${p.status}')">Edit</button>
+                        <button onclick="deleteProject(${p.project_id})" class="secondary">Delete</button>
+                    </td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        // load dropdown options for the form
+        async function loadFormSelects() {
+            // get all species for dropdown
+            const speciesData = await fetchAPI('/api/invasive-species');
+            const speciesSelect = document.getElementById('species-select');
+            speciesSelect.innerHTML = '<option value="">-- Select a species --</option>';
+
+            if (speciesData) {
+                speciesData.forEach(s => {
+                    const option = document.createElement('option');
+                    option.value = s.invasive_scientific_name;
+                    option.textContent = s.common_name + ' (' + s.invasive_scientific_name + ')';
+                    speciesSelect.appendChild(option);
+                });
+            }
+
+            // hardcoded regions 
+            const regions = [
+                { id: 1, name: 'Avalon Peninsula' },
+                { id: 2, name: 'Burin Peninsula' },
+                { id: 3, name: 'Central Newfoundland' },
+                { id: 4, name: 'Northern Peninsula' },
+                { id: 5, name: "St. John's" },
+                { id: 6, name: 'Gros Morne' }
+            ];
+
+            const regionSelect = document.getElementById('region-select');
+            regionSelect.innerHTML = '<option value="">-- Select a region --</option>';
+            regions.forEach(r => {
+                const option = document.createElement('option');
+                option.value = r.id;
+                option.textContent = r.name;
+                regionSelect.appendChild(option);
+            });
+
+            // set today as default date
+            document.getElementById('date-input').value = new Date().toISOString().split('T')[0];
+        }
+
+        // form submission handler
+        document.getElementById('sighting-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // collect form data
+            const formData = {
+                invasive_scientific_name: document.getElementById('species-select').value,
+                region_id: parseInt(document.getElementById('region-select').value),
+                count_estimate: parseInt(document.getElementById('count-input').value),
+                observed_date: document.getElementById('date-input').value,
+                photo_url: document.getElementById('photo-input').value || null,
+            };
+
+            // validate required fields
+            if (!formData.invasive_scientific_name || !formData.region_id || formData.count_estimate === null) {
+                showAlert('Please fill in all required fields', 'error');
+                return;
+            }
+            if (formData.count_estimate < 0) {
+                showAlert('Count must be 0 or higher', 'error');
+                return;
+            }
+
+            // submit to api
+            const result = await postAPI('/api/sightings', formData);
+            if (result && result.sighting) {
+                showAlert('Sighting submitted successfully!', 'success');
+                // reset form
+                document.getElementById('sighting-form').reset();
+                document.getElementById('date-input').value = new Date().toISOString().split('T')[0];
+            }
+        });
+
+        // edit sighting count
+        async function editSighting(sightingId, currentCount) {
+            const newCount = prompt("Update count estimate:", currentCount);
+            if (newCount === null) return; // user cancelled
+
+            const count = parseInt(newCount);
+            if (isNaN(count) || count < 0) {
+                showAlert('Invalid count value', 'error');
+                return;
+            }
+
+            // send update to api
+            const response = await fetch(`/api/sightings/${sightingId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ count_estimate: count }),
+            });
+
+            if (response.ok) {
+                showAlert('Sighting updated!', 'success');
+                loadSightings(); // reload table
+            } else {
+                showAlert('Failed to update sighting', 'error');
+            }
+        }
+
+        // delete sighting
+        async function deleteSighting(sightingId) {
+            if (!confirm("Delete this sighting?")) return; // ask for confirmation
+
+            const response = await fetch(`/api/sightings/${sightingId}`, { method: 'DELETE' });
+            if (response.ok) {
+                showAlert('Sighting deleted!', 'success');
+                loadSightings(); // reload table
+            } else {
+                showAlert('Failed to delete sighting', 'error');
+            }
+        }
+
+        // edit project status
+        async function editProject(projectId, currentStatus) {
+            const newStatus = prompt("Update status (planning/active/completed/on-hold):", currentStatus);
+            if (!newStatus) return;
+
+            // validate status
+            if (!['planning','active','completed','on-hold'].includes(newStatus)) {
+                showAlert('Invalid status value!', 'error');
+                return;
+            }
+
+            const response = await fetch(`/api/projects/${projectId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus }),
+            });
+
+            if (response.ok) {
+                showAlert('Project updated!', 'success');
+                loadProjects(); // reload table
+            } else {
+                showAlert('Failed to update project', 'error');
+            }
+        }
+
+        // delete project
+        async function deleteProject(projectId) {
+            if (!confirm("Delete this project?")) return;
+
+            const response = await fetch(`/api/projects/${projectId}`, { method: 'DELETE' });
+            if (response.ok) {
+                showAlert('Project deleted!', 'success');
+                loadProjects(); // reload table
+            } else {
+                showAlert('Failed to delete project', 'error');
+            }
+        }
+
+        // run query and show results
+        async function runQuery(queryNum) {
+    const resultsDiv = document.getElementById('query-results');
+    resultsDiv.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+    let data = await fetchAPI(`/api/queries/${queryNum}`);
+
+   
+    if (queryNum === 6 && data && Array.isArray(data.trend)) {
+        var speciesName = data.invasive_scientific_name;
+        data = data.trend;
+    }
+
+    if (!data || data.length === 0) {
+        resultsDiv.innerHTML = '<p class="empty-state">No results found for this query</p>';
+        return;
+    }
+
+    let title = `Query ${queryNum} Results`;
+    if (queryNum === 6 && speciesName) {
+        title += ` for ${speciesName}`;
+    }
+
+    let html = `<h3>${title}</h3><table><thead><tr>`;
+
+    if (queryNum === 1) html += '<th>Scientific Name</th><th>Common Name</th>';
+    else if (queryNum === 2) html += '<th>Region</th><th>Risk Level</th><th>Count</th>';
+    else if (queryNum === 3) html += '<th>Project ID</th><th>Project Name</th><th>Status</th><th>Method</th>';
+    else if (queryNum === 4) html += '<th>Region ID</th><th>Region Name</th>';
+    else if (queryNum === 5) html += '<th>Native Scientific Name</th><th>Common Name</th><th>Threat Count</th>';
+    else if (queryNum === 6) html += '<th>Year</th><th>Total Sightings</th>';
+
+    html += '</tr></thead><tbody>';
+
+    data.forEach(row => {
+        html += '<tr>';
+        if (queryNum === 1) html += `<td>${row.invasive_scientific_name}</td><td>${row.common_name}</td>`;
+        else if (queryNum === 2) html += `<td>${row.region}</td><td><span class="badge badge-${row.risk_level}">${row.risk_level}</span></td><td>${row.count}</td>`;
+        else if (queryNum === 3) html += `<td>${row.project_id}</td><td>${row.name_of_project}</td><td>${row.status}</td><td>${row.method_name}</td>`;
+        else if (queryNum === 4) html += `<td>${row.region_id}</td><td>${row.region_name}</td>`;
+        else if (queryNum === 5) html += `<td>${row.native_scientific_name}</td><td>${row.native_common_name}</td><td>${row.threat_count}</td>`;
+        else if (queryNum === 6) html += `<td>${row.year}</td><td>${row.total_sightings}</td>`;
+        html += '</tr>';
+    });
+
+    html += '</tbody></table>';
+    resultsDiv.innerHTML = html;
+}
+        // load dashboard when page first loads
+        loadDashboard();
+    </script>
+</body>
+</html>
