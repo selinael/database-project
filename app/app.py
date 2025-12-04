@@ -6,47 +6,57 @@ from datetime import date
 app = Flask(__name__)
 
 # ----------------- DB CONFIG -----------------
+# Figure out where the project lives and where the DB file is.
 APP_DIR = Path(__file__).resolve().parent          # .../database-project/app
 PROJECT_ROOT = APP_DIR.parent                      # .../database-project
-DB_PATH = PROJECT_ROOT / "sql" / "database.db"     # use the DB built by init_db.py
+DB_PATH = PROJECT_ROOT / "sql" / "database.db"     # we use the DB created by init_db.py
 
 
 def get_db_connection():
-    """simple helper to open a sqlite connection"""
+    """
+    Open a connection to our SQLite database.
+    - row_factory lets us access columns by name instead of index
+    - we also turn on foreign keys so constraints actually work
+    """
     conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row  # so we can access columns by name
-    conn.execute("PRAGMA foreign_keys = ON;")  # enforce FK constraints
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys = ON;")
     return conn
 
 
 # ----------------- UI ROUTES -----------------
 
-# Root + /dashboard both render the HTML UI
+# Root page + /dashboard both serve the same HTML SPA
 @app.route("/")
 @app.route("/dashboard")
 def dashboard():
+    # index.html has all our JS and CSS and does the API calls
     return render_template("index.html")
 
 
-# Stats API for dashboard cards
+# ----------------- API: STATS (for dashboard cards) -----------------
+
 @app.route("/api/stats")
 def stats():
+    """
+    Return some basic counts for the dashboard:
+    - total species
+    - total sightings
+    - active projects
+    - counts of high/medium/low risk species
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
-    # total number of invasive species
     cur.execute("SELECT COUNT(*) FROM invasive_species;")
     total_species = cur.fetchone()[0]
 
-    # total number of sightings
     cur.execute("SELECT COUNT(*) FROM sighting;")
     total_sightings = cur.fetchone()[0]
 
-    # projects that are currently active
     cur.execute("SELECT COUNT(*) FROM eradication_project WHERE status = 'active';")
     active_projects = cur.fetchone()[0]
 
-    # counts by risk level
     cur.execute("SELECT COUNT(*) FROM invasive_species WHERE risk_level = 'high';")
     high_risk = cur.fetchone()[0]
 
@@ -68,7 +78,7 @@ def stats():
     })
 
 
-# simple route to check server
+# quick “ping” route to check that Flask is alive
 @app.route("/test")
 def test():
     return "test route is working"
@@ -76,9 +86,14 @@ def test():
 
 # ----------------- API: INVASIVE SPECIES -----------------
 
-# list of invasive species and basic details (now from sqlite)
 @app.route("/api/invasive-species")
 def list_invasive_species():
+    """
+    Return all invasive species with some basic info.
+    This is used to populate:
+    - Species table
+    - The dropdown in the “Report Sighting” form
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
@@ -97,7 +112,6 @@ def list_invasive_species():
     rows = cur.fetchall()
     conn.close()
 
-    # convert sqlite rows to plain dicts for json
     species = []
     for row in rows:
         species.append({
@@ -114,15 +128,22 @@ def list_invasive_species():
 
 # ----------------- API: SIGHTINGS -----------------
 
-# list recent sightings (now loaded from sqlite)
 @app.route("/api/sightings")
 def list_sightings():
+    """
+    Get all sightings from the DB.
+    NOTE: our table does NOT have photo_url, so we ignore that completely.
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
-    # Grab all columns that exist in the table
     cur.execute("""
-        SELECT *
+        SELECT
+            sighting_id,
+            observed_date,
+            count_estimate,
+            invasive_scientific_name,
+            region_id
         FROM sighting
         ORDER BY observed_date DESC, sighting_id DESC
     """)
@@ -132,50 +153,49 @@ def list_sightings():
 
     sightings = []
     for row in rows:
-        # turn sqlite Row into a normal dict
-        r = dict(row)
-
-        # normalise keys expected by the frontend
-        # (if photo_url column doesn't exist, we still provide it as None)
-        if "photo_url" not in r:
-            r["photo_url"] = None
-
         sightings.append({
-            "sighting_id": r.get("sighting_id"),
-            "observed_date": r.get("observed_date"),
-            "count_estimate": r.get("count_estimate"),
-            "photo_url": r.get("photo_url"),
-            "invasive_scientific_name": r.get("invasive_scientific_name"),
-            "region_id": r.get("region_id"),
+            "sighting_id": row["sighting_id"],
+            "observed_date": row["observed_date"],
+            "count_estimate": row["count_estimate"],
+            "invasive_scientific_name": row["invasive_scientific_name"],
+            "region_id": row["region_id"],
         })
 
     return jsonify(sightings)
 
-# create a new sighting (real insert into SQLite)
+
 @app.route("/api/sightings", methods=["POST"])
 def create_sighting():
+    """
+    Create a new sighting.
+    Expected JSON:
+    {
+        "invasive_scientific_name": "...",
+        "region_id": 1,
+        "count_estimate": 5,
+        "observed_date": "YYYY-MM-DD"   # optional, we default to today
+    }
+    """
     data = request.get_json()
 
     if data is None:
         return jsonify({"error": "request body must be json"}), 400
 
-    # required fields based on the sighting table
+    # make sure required fields exist
     required_fields = ["invasive_scientific_name", "region_id", "count_estimate"]
     missing = [f for f in required_fields if f not in data]
-
     if missing:
         return jsonify({"error": f"missing fields: {', '.join(missing)}"}), 400
 
-    # basic type handling / defaults
     invasive_scientific_name = data["invasive_scientific_name"]
     region_id = int(data["region_id"])
     count_estimate = int(data["count_estimate"])
-    photo_url = data.get("photo_url")
 
+    # simple validation
     if count_estimate < 0:
         return jsonify({"error": "count_estimate must be >= 0"}), 400
 
-    # if no date is sent, use today's date in ISO format
+    # if front-end didn’t send a date, use today
     observed_date = data.get("observed_date")
     if not observed_date:
         observed_date = date.today().isoformat()
@@ -183,17 +203,15 @@ def create_sighting():
     conn = get_db_connection()
     cur = conn.cursor()
 
-    # insert the new sighting row
     cur.execute("""
         INSERT INTO sighting (
             observed_date,
             count_estimate,
-            photo_url,
             invasive_scientific_name,
             region_id
         )
-        VALUES (?, ?, ?, ?, ?);
-    """, (observed_date, count_estimate, photo_url, invasive_scientific_name, region_id))
+        VALUES (?, ?, ?, ?);
+    """, (observed_date, count_estimate, invasive_scientific_name, region_id))
 
     conn.commit()
     new_id = cur.lastrowid
@@ -203,7 +221,6 @@ def create_sighting():
         "sighting_id": new_id,
         "observed_date": observed_date,
         "count_estimate": count_estimate,
-        "photo_url": photo_url,
         "invasive_scientific_name": invasive_scientific_name,
         "region_id": region_id,
     }
@@ -214,9 +231,14 @@ def create_sighting():
     }), 201
 
 
-# Update a sighting (UPDATE)
 @app.route("/api/sightings/<int:sighting_id>", methods=["PUT"])
 def update_sighting(sighting_id):
+    """
+    Update a sighting.
+    Right now we only allow changing:
+    - count_estimate
+    - observed_date
+    """
     data = request.get_json()
     if data is None:
         return jsonify({"error": "request body must be json"}), 400
@@ -224,7 +246,6 @@ def update_sighting(sighting_id):
     conn = get_db_connection()
     cur = conn.cursor()
 
-    # Build update query based on what fields are provided
     updates = []
     values = []
 
@@ -236,14 +257,10 @@ def update_sighting(sighting_id):
         updates.append("observed_date = ?")
         values.append(data["observed_date"])
 
-    if "photo_url" in data:
-        updates.append("photo_url = ?")
-        values.append(data["photo_url"])
-
+    # if nothing is provided, we bail
     if not updates:
         return jsonify({"error": "no fields to update"}), 400
 
-    # Add the sighting_id to values for WHERE clause
     values.append(sighting_id)
     query = f"UPDATE sighting SET {', '.join(updates)} WHERE sighting_id = ?"
 
@@ -251,6 +268,7 @@ def update_sighting(sighting_id):
         cur.execute(query, values)
         conn.commit()
         if cur.rowcount == 0:
+            # no row with that ID
             conn.close()
             return jsonify({"error": "sighting not found"}), 404
         conn.close()
@@ -260,9 +278,12 @@ def update_sighting(sighting_id):
         return jsonify({"error": str(e)}), 400
 
 
-# Delete a sighting (DELETE)
 @app.route("/api/sightings/<int:sighting_id>", methods=["DELETE"])
 def delete_sighting(sighting_id):
+    """
+    Delete a sighting by ID.
+    If no row is deleted -> 404
+    """
     conn = get_db_connection()
     cur = conn.cursor()
     try:
@@ -280,9 +301,12 @@ def delete_sighting(sighting_id):
 
 # ----------------- API: PROJECTS -----------------
 
-# list eradication projects (now from sqlite)
 @app.route("/api/projects")
 def list_projects():
+    """
+    Return all eradication projects.
+    Used for the Projects tab table.
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
@@ -323,9 +347,15 @@ def list_projects():
     return jsonify(projects)
 
 
-# Update a project (UPDATE)
 @app.route("/api/projects/<int:project_id>", methods=["PUT"])
 def update_project(project_id):
+    """
+    Update a project.
+    Allowed fields:
+    - status
+    - budget_spent
+    - notes
+    """
     data = request.get_json()
     if data is None:
         return jsonify({"error": "request body must be json"}), 400
@@ -365,18 +395,21 @@ def update_project(project_id):
         return jsonify({"error": str(e)}), 400
 
 
-# Delete a project (DELETE)
 @app.route("/api/projects/<int:project_id>", methods=["DELETE"])
 def delete_project(project_id):
+    """
+    Delete a project.
+    We first clean up the junction tables so FK constraints don't complain.
+    """
     conn = get_db_connection()
     cur = conn.cursor()
     try:
-        # First delete junction table entries to avoid FK constraint issues
+        # first remove references in junction tables
         cur.execute("DELETE FROM method_project WHERE project_id = ?", (project_id,))
         cur.execute("DELETE FROM project_region WHERE project_id = ?", (project_id,))
         cur.execute("DELETE FROM species_project WHERE project_id = ?", (project_id,))
 
-        # Then delete the project itself
+        # then delete the actual project row
         cur.execute("DELETE FROM eradication_project WHERE project_id = ?", (project_id,))
         conn.commit()
         if cur.rowcount == 0:
@@ -389,15 +422,16 @@ def delete_project(project_id):
         return jsonify({"error": str(e)}), 400
 
 
-# ----------------- API: QUERIES -----------------
+# ----------------- API: QUERIES (Q1–Q6) -----------------
 
-# Q1: high risk species with no control method (real data)
 @app.route("/api/queries/1")
 def query_1():
+    """
+    Q1: High-risk species that do NOT have any control method assigned.
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
-    # pick high risk species that are not in species_control_method
     cur.execute("""
         SELECT
             invasive_scientific_name,
@@ -423,13 +457,15 @@ def query_1():
     return jsonify(result)
 
 
-# Q2: sightings count by region and risk level (real data)
 @app.route("/api/queries/2")
 def query_2():
+    """
+    Q2: Sightings count by region and risk level.
+    This joins sighting + region + invasive_species and groups.
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
-    # join sighting with region and invasive_species, then group by region + risk
     cur.execute("""
         SELECT
             r.region_name AS region,
@@ -458,13 +494,14 @@ def query_2():
     return jsonify(data)
 
 
-# Q3: projects that use 'Manual Removal' as a control method (real data)
 @app.route("/api/queries/3")
 def query_3():
+    """
+    Q3: Projects that use 'Manual Removal' as a control method.
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
-    # find projects that are linked to the Manual Removal method
     cur.execute("""
         SELECT
             p.project_id,
@@ -493,9 +530,11 @@ def query_3():
     return jsonify(data)
 
 
-# Q4: regions with sightings but no active projects (real data)
 @app.route("/api/queries/4")
 def query_4():
+    """
+    Q4: Regions that have sightings but NO active projects.
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
@@ -527,9 +566,11 @@ def query_4():
     return jsonify(data)
 
 
-# Q5: native species impacted by high risk invasives (real data)
 @app.route("/api/queries/5")
 def query_5():
+    """
+    Q5: Native species impacted by high-risk invasive species.
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
@@ -562,16 +603,18 @@ def query_5():
     return jsonify(data)
 
 
-# Q6: population trend (sightings count by year) for one invasive species (real data)
 @app.route("/api/queries/6")
 def query_6():
-    # Get species from query string, use default if not given
+    """
+    Q6: Population trend (number of sightings per year)
+        for a given invasive species.
+    If ?species= is not passed, we use European Green Crab by default.
+    """
     species_name = request.args.get("species", "Carcinus maenas")
 
     conn = get_db_connection()
     cur = conn.cursor()
 
-    # Group sightings by year for the selected species
     cur.execute("""
         SELECT
             strftime('%Y', observed_date) AS year,
@@ -600,4 +643,5 @@ def query_6():
 
 # ----------------- MAIN -----------------
 if __name__ == "__main__":
+    # debug=True so we can see errors in the browser while developing
     app.run(debug=True)
