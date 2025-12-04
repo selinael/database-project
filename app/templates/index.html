@@ -527,19 +527,25 @@
                 '</tr></thead><tbody>';
 
             sightings.forEach(s => {
-                html += `<tr>
-                    <td>${s.observed_date}</td>
-                    <td>${s.invasive_scientific_name}</td>
-                    <td>Region ${s.region_id}</td>
-                    <td>${s.count_estimate}</td>
-                    <td>
-                        <button onclick="editSighting(${s.sighting_id}, ${s.count_estimate})">Edit</button>
-                        <button onclick="deleteSighting(${s.sighting_id})" class="secondary">Delete</button>
-                    </td>
-                </tr>`;
+                // prefer region_name sent by backend, fallback to Region X if missing
+                const regionText = s.region_name || s.region || `Region ${s.region_id}`;
+
+                html += `
+                    <tr>
+                        <td>${s.observed_date}</td>
+                        <td>${s.invasive_scientific_name}</td>
+                        <td>${regionText}</td>
+                        <td>${s.count_estimate}</td>
+                        <td>
+                            <button onclick="editSighting(${s.sighting_id}, ${s.count_estimate})">Edit</button>
+                            <button onclick="deleteSighting(${s.sighting_id})" class="secondary">Delete</button>
+                        </td>
+                    </tr>
+                `;
             });
 
             html += '</tbody></table>';
+
             return html;
         }
 
