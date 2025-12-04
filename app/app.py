@@ -126,26 +126,28 @@ def list_invasive_species():
     return jsonify(species)
 
 
+
 # ----------------- API: SIGHTINGS -----------------
 
-@app.route("/api/sightings")
+# GET /api/sightings  -> return all sightings with region names
+@app.route("/api/sightings", methods=["GET"])
 def list_sightings():
-    """
-    Get all sightings from the DB.
-    NOTE: our table does NOT have photo_url, so we ignore that completely.
-    """
     conn = get_db_connection()
     cur = conn.cursor()
 
+    # join sighting with region so we can show "Avalon Peninsula"
     cur.execute("""
         SELECT
-            sighting_id,
-            observed_date,
-            count_estimate,
-            invasive_scientific_name,
-            region_id
-        FROM sighting
-        ORDER BY observed_date DESC, sighting_id DESC
+            s.sighting_id,
+            s.observed_date,
+            s.count_estimate,
+            s.invasive_scientific_name,
+            s.region_id,
+            r.region_name
+        FROM sighting AS s
+        JOIN region AS r
+            ON s.region_id = r.region_id
+        ORDER BY s.observed_date DESC, s.sighting_id DESC;
     """)
 
     rows = cur.fetchall()
@@ -159,10 +161,10 @@ def list_sightings():
             "count_estimate": row["count_estimate"],
             "invasive_scientific_name": row["invasive_scientific_name"],
             "region_id": row["region_id"],
+            "region_name": row["region_name"],   # new field we send to frontend
         })
 
     return jsonify(sightings)
-
 
 @app.route("/api/sightings", methods=["POST"])
 def create_sighting():
