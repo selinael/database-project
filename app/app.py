@@ -641,7 +641,46 @@ def query_6():
         "invasive_scientific_name": species_name,
         "trend": trend,
     })
+@app.route("/api/queries/custom", methods=["POST"])
+def query_custom():
+    """
+    Run a read-only custom SQL query.
+    - Only allows a single SELECT statement.
+    - Used by the 'Run Custom Query' box in the Queries tab.
+    """
+    data = request.get_json(silent=True) or {}
+    sql = (data.get("sql") or "").strip()
 
+    if not sql:
+        return jsonify({"error": "No SQL provided"}), 400
+
+    # Basic safety checks: SELECT-only and single statement
+    upper = sql.upper().lstrip()
+    if not upper.startswith("SELECT"):
+        return jsonify({"error": "Only SELECT statements are allowed"}), 400
+
+    # Disallow multiple statements (anything beyond one ';', except maybe a trailing one)
+    if ";" in sql[:-1]:
+        return jsonify({"error": "Only a single SELECT statement is allowed"}), 400
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute(sql)
+
+        # Grab column names from cursor.description
+        columns = [desc[0] for desc in cur.description] if cur.description else []
+        raw_rows = cur.fetchall()
+
+        conn.close()
+
+        # Convert to list of dicts so JSON is nice on the frontend
+        rows = [dict(zip(columns, row)) for row in raw_rows]
+
+        return jsonify({"rows": rows})
+    except sqlite3.Error as e:
+        conn.close()
+        return jsonify({"error": f"SQL error: {e}"}), 400
 
 # ----------------- MAIN -----------------
 if __name__ == "__main__":

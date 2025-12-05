@@ -354,6 +354,23 @@
                     <button onclick="runQuery(6)">Run Query</button>
                 </div>
             </div>
+
+            <!-- Custom query box -->
+            <section style="margin-top: 2rem;">
+                <h3>Run a Custom SQL Query</h3>
+                <p style="max-width: 650px;">
+                    This is a read-only helper for exploration. Only <code>SELECT</code> statements are allowed.
+                </p>
+
+                <label for="custom-query-input">
+                    SQL (SELECT only)
+                    <textarea id="custom-query-input" rows="4"
+                        placeholder="e.g. SELECT * FROM invasive_species LIMIT 10;"></textarea>
+                </label>
+
+                <button type="button" onclick="runCustomQuery()">Run Custom Query</button>
+            </section>
+
             <div id="query-results"></div>
         </div>
 
@@ -740,7 +757,7 @@
         }
 
         // run query and show results
-        async function runQuery(queryNum) {
+    async function runQuery(queryNum) {
     const resultsDiv = document.getElementById('query-results');
     resultsDiv.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
     let data = await fetchAPI(`/api/queries/${queryNum}`);
@@ -786,6 +803,71 @@
     html += '</tbody></table>';
     resultsDiv.innerHTML = html;
 }
+
+        // run custom SQL query (SELECT only) and show results
+        async function runCustomQuery() {
+            const sqlBox = document.getElementById('custom-query-input');
+            const sql = sqlBox.value.trim();
+            const resultsDiv = document.getElementById('query-results');
+
+            if (!sql) {
+                showAlert('Please enter a SQL query first', 'error');
+                return;
+            }
+
+            // show loading spinner in the same results area
+            resultsDiv.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+            try {
+                const res = await fetch('/api/queries/custom', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sql })
+                });
+
+                const payload = await res.json();
+
+                if (!res.ok) {
+                    // backend sends { error: "..." } on failure
+                    resultsDiv.innerHTML =
+                        `<p class="empty-state">${payload.error || 'Error running custom query'}</p>`;
+                    return;
+                }
+
+                const rows = payload.rows || [];
+
+                if (rows.length === 0) {
+                    resultsDiv.innerHTML = '<p class="empty-state">No results returned for this query</p>';
+                    return;
+                }
+
+                // Dynamically build table based on columns in the first row
+                const columns = Object.keys(rows[0]);
+                let html = '<h3>Custom Query Results</h3>';
+                html += '<table><thead><tr>';
+
+                columns.forEach(col => {
+                    html += `<th>${col}</th>`;
+                });
+
+                html += '</tr></thead><tbody>';
+
+                rows.forEach(row => {
+                    html += '<tr>';
+                    columns.forEach(col => {
+                        html += `<td>${row[col]}</td>`;
+                    });
+                    html += '</tr>';
+                });
+
+                html += '</tbody></table>';
+                resultsDiv.innerHTML = html;
+            } catch (err) {
+                console.error('Custom query error:', err);
+                resultsDiv.innerHTML =
+                    '<p class="empty-state">Unexpected error running custom query</p>';
+            }
+        }
         // load dashboard when page first loads
         loadDashboard();
     </script>
