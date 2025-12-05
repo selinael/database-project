@@ -154,6 +154,22 @@
             width: 100%;
             margin: 0;
         }
+                .custom-query-card {
+            border: 2px dashed var(--pico-muted-border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .custom-query-card textarea {
+            font-family: monospace;
+        }
+
+        .custom-query-note {
+            font-size: 0.8rem;
+            color: var(--pico-muted-color);
+            margin-top: 0.5rem;
+        }
 
         /* badge styling for risk levels */
         .badge {
@@ -355,23 +371,27 @@
                 </div>
             </div>
 
-            <!-- Custom query box -->
-            <section style="margin-top: 2rem;">
-                <h3>Run a Custom SQL Query</h3>
-                <p style="max-width: 650px;">
-                    This is a read-only helper for exploration. Only <code>SELECT</code> statements are allowed.
-                </p>
+                       <!-- custom SQL query card -->
+            <div class="custom-query-card">
+                <h3>Custom SQL Query </h3>
+                <p>Run your own SQL against the database. This can modify data, so use carefully.</p>
 
-                <label for="custom-query-input">
-                    SQL (SELECT only)
-                    <textarea id="custom-query-input" rows="4"
-                        placeholder="e.g. SELECT * FROM invasive_species LIMIT 10;"></textarea>
+                <label for="custom-sql-input">
+                    SQL
+                    <textarea id="custom-sql-input"
+                              rows="4"
+                              placeholder="SELECT * FROM invasive_species LIMIT 5;"></textarea>
                 </label>
 
                 <button type="button" onclick="runCustomQuery()">Run Custom Query</button>
-            </section>
+                <p class="custom-query-note">
+                    Tip: You can run SELECT, INSERT, UPDATE, DELETE and more. For this demo, avoid very destructive commands.
+                </p>
+            </div>
 
             <div id="query-results"></div>
+
+            
         </div>
 
         <!-- REPORT SIGHTING TAB -->
@@ -803,71 +823,84 @@
     html += '</tbody></table>';
     resultsDiv.innerHTML = html;
 }
-
-        // run custom SQL query (SELECT only) and show results
+                        // FULL-POWER custom query: SELECT or INSERT/UPDATE/DELETE/etc.
         async function runCustomQuery() {
-            const sqlBox = document.getElementById('custom-query-input');
-            const sql = sqlBox.value.trim();
+            const sqlInput = document.getElementById('custom-sql-input');  // <-- matches your textarea id
+            const sql = sqlInput.value.trim();
             const resultsDiv = document.getElementById('query-results');
 
             if (!sql) {
-                showAlert('Please enter a SQL query first', 'error');
+                showAlert('Please enter a SQL query first.', 'error');
                 return;
             }
 
-            // show loading spinner in the same results area
+            // show loading spinner while query runs
             resultsDiv.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
 
             try {
-                const res = await fetch('/api/queries/custom', {
+                const resp = await fetch('/api/custom-query', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ sql })
+                    body: JSON.stringify({ sql }),
                 });
 
-                const payload = await res.json();
+                const data = await resp.json();
 
-                if (!res.ok) {
-                    // backend sends { error: "..." } on failure
-                    resultsDiv.innerHTML =
-                        `<p class="empty-state">${payload.error || 'Error running custom query'}</p>`;
+                if (!resp.ok) {
+                    resultsDiv.innerHTML = `<p class="empty-state">Error: ${data.error || 'Unknown error'}</p>`;
                     return;
                 }
 
-                const rows = payload.rows || [];
+                // If it's a SELECT-like query
+                if (data.type === 'select') {
+                    const rows = data.rows || [];
 
-                if (rows.length === 0) {
-                    resultsDiv.innerHTML = '<p class="empty-state">No results returned for this query</p>';
-                    return;
-                }
+                    if (rows.length === 0) {
+                        resultsDiv.innerHTML = '<p class="empty-state">Query ran successfully but returned no rows.</p>';
+                        return;
+                    }
 
-                // Dynamically build table based on columns in the first row
-                const columns = Object.keys(rows[0]);
-                let html = '<h3>Custom Query Results</h3>';
-                html += '<table><thead><tr>';
+                    // Build generic table using keys from the first row
+                    const columns = Object.keys(rows[0]);
+                    let html = '<h3>Custom Query Results</h3><table><thead><tr>';
 
-                columns.forEach(col => {
-                    html += `<th>${col}</th>`;
-                });
-
-                html += '</tr></thead><tbody>';
-
-                rows.forEach(row => {
-                    html += '<tr>';
                     columns.forEach(col => {
-                        html += `<td>${row[col]}</td>`;
+                        html += `<th>${col}</th>`;
                     });
-                    html += '</tr>';
-                });
+                    html += '</tr></thead><tbody>';
 
-                html += '</tbody></table>';
-                resultsDiv.innerHTML = html;
+                    rows.forEach(row => {
+                        html += '<tr>';
+                        columns.forEach(col => {
+                            html += `<td>${row[col]}</td>`;
+                        });
+                        html += '</tr>';
+                    });
+
+                    html += '</tbody></table>';
+                    resultsDiv.innerHTML = html;
+
+                } else if (data.type === 'write') {
+                    // Non-SELECT: show how many rows were affected
+                    resultsDiv.innerHTML =
+                        `<p class="empty-state">Query ran successfully. Rows affected: ${data.rows_affected}</p>`;
+
+                    // optional: refresh main views in case they changed
+                    loadDashboard();
+                    loadSightings();
+                    loadProjects();
+                } else {
+                    resultsDiv.innerHTML =
+                        '<p class="empty-state">Query ran, but response format was unexpected.</p>';
+                }
             } catch (err) {
                 console.error('Custom query error:', err);
                 resultsDiv.innerHTML =
-                    '<p class="empty-state">Unexpected error running custom query</p>';
+                    '<p class="empty-state">Unexpected error while running query.</p>';
             }
         }
+
+        
         // load dashboard when page first loads
         loadDashboard();
     </script>

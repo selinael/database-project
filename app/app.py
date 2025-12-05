@@ -641,6 +641,54 @@ def query_6():
         "invasive_scientific_name": species_name,
         "trend": trend,
     })
+
+@app.route("/api/custom-query", methods=["POST"])
+def custom_query():
+    """
+    Run an arbitrary SQL query.
+    - If it's a SELECT-like query, we return the rows.
+    - If it's INSERT / UPDATE / DELETE / etc., we run it, commit,
+      and return how many rows were affected.
+    NOTE: This is only for local / demo use. Do NOT ship this in production.
+    """
+    data = request.get_json() or {}
+    sql = (data.get("sql") or "").strip()
+
+    if not sql:
+        return jsonify({"error": "SQL query is required"}), 400
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    try:
+        # This will run SELECT, INSERT, UPDATE, DELETE, CREATE, etc.
+        cur.execute(sql)
+
+        # If cursor.description is not None -> we have columns -> it's a SELECT-like query
+        if cur.description is not None:
+            columns = [col[0] for col in cur.description]
+            rows_raw = cur.fetchall()
+            rows = [dict(zip(columns, row)) for row in rows_raw]
+            conn.close()
+            return jsonify({
+                "type": "select",
+                "rows": rows,
+            }), 200
+        else:
+            # Non-SELECT: commit and report how many rows changed
+            affected = cur.rowcount
+            conn.commit()
+            conn.close()
+            return jsonify({
+                "type": "write",
+                "rows_affected": affected,
+            }), 200
+
+    except sqlite3.Error as e:
+        # Roll back and report SQL error
+        conn.rollback()
+        conn.close()
+        return jsonify({"error": f"SQL error: {e}"}), 400
 @app.route("/api/queries/custom", methods=["POST"])
 def query_custom():
     """
