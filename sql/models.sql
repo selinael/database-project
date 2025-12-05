@@ -87,7 +87,8 @@ CREATE TABLE yearly_status (
     invasive_scientific_name TEXT NOT NULL,
     region_id                INTEGER NOT NULL,
     FOREIGN KEY (invasive_scientific_name) REFERENCES invasive_species(invasive_scientific_name) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (region_id) REFERENCES region(region_id) ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY (region_id) REFERENCES region(region_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    UNIQUE (invasive_scientific_name, region_id, year)
 );
 
 
